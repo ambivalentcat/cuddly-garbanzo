@@ -543,9 +543,17 @@
 
         <!-- SECTION: Scripts -->
         <div id="scripts" class="section-content max-w-5xl mx-auto pb-12 print-break-before">
-            <h2 class="text-3xl font-extrabold text-slate-800 mb-8 flex items-center gap-3 tracking-tight">
-                <span class="bg-secondary/10 text-secondary w-12 h-12 flex items-center justify-center rounded-xl"><i class="fas fa-comment-dots"></i></span> Скрипты и Шаблоны
-            </h2>
+            <div class="flex flex-col sm:flex-row sm:items-center justify-between gap-4 mb-8">
+                <h2 class="text-3xl font-extrabold text-slate-800 flex items-center gap-3 tracking-tight">
+                    <span class="bg-secondary/10 text-secondary w-12 h-12 flex items-center justify-center rounded-xl"><i class="fas fa-comment-dots"></i></span> Скрипты и Шаблоны
+                </h2>
+                
+                <!-- Language Toggle -->
+                <div class="flex items-center gap-1 bg-slate-200/60 p-1 rounded-xl border border-slate-200 shadow-inner w-max">
+                    <button onclick="toggleScriptLanguage('en')" id="btn-lang-en" class="px-4 py-1.5 rounded-lg text-sm font-bold bg-white text-primary shadow-sm transition-all focus:outline-none">English</button>
+                    <button onclick="toggleScriptLanguage('ru')" id="btn-lang-ru" class="px-4 py-1.5 rounded-lg text-sm font-bold text-slate-500 hover:text-slate-700 transition-all focus:outline-none">Русский</button>
+                </div>
+            </div>
             
             <div class="grid md:grid-cols-2 gap-5 mb-8">
                 <!-- Script 1 -->
@@ -557,7 +565,10 @@
                             <span class="copy-feedback shadow-lg">Copied!</span>
                         </button>
                     </div>
-                    <div class="p-5 text-slate-600 font-mono text-sm leading-relaxed bg-white selection:bg-blue-100 flex-1" id="script1">Hello, my name is Evgenii. I am calling from the AIST Safety Consulting Safety Department. I'm going to send you the link with the application on your email. Could you please fill it out as soon as you can? It's a mandatory step for FMCSA compliance.</div>
+                    <div class="p-5 text-slate-600 font-mono text-sm leading-relaxed bg-white selection:bg-blue-100 flex-1" id="script1">
+                        <span class="script-en">Hello, my name is Evgenii. I am calling from the AIST Safety Consulting Safety Department. I'm going to send you the link with the application on your email. Could you please fill it out as soon as you can? It's a mandatory step for FMCSA compliance.</span>
+                        <span class="script-ru hidden">Здравствуйте, меня зовут Евгений. Я звоню из отдела безопасности AIST Safety Consulting. Сейчас я отправлю вам ссылку на анкету на вашу электронную почту. Пожалуйста, заполните ее как можно скорее. Это обязательное требование FMCSA для выхода в рейс.</span>
+                    </div>
                 </div>
 
                 <!-- Script 2 -->
@@ -569,12 +580,17 @@
                             <span class="copy-feedback shadow-lg">Copied!</span>
                         </button>
                     </div>
-                    <div class="p-5 text-slate-600 font-mono text-sm leading-relaxed bg-white selection:bg-blue-100 whitespace-pre-wrap flex-1" id="script2">Please provide the following info for each job since 2015:
+                    <div class="p-5 text-slate-600 font-mono text-sm leading-relaxed bg-white selection:bg-blue-100 whitespace-pre-wrap flex-1" id="script2"><span class="script-en">Please provide the following info for each job since 2015:
 - Name of the company
 - Start Date (Month/Year)
 - End Date (Month/Year)
 - City and State
-- Position (Driver or Owner-Operator)</div>
+- Position (Driver or Owner-Operator)</span><span class="script-ru hidden">Пожалуйста, предоставьте следующую информацию по каждому месту работы начиная с 2015 года:
+- Название компании
+- Дата начала (Месяц/Год)
+- Дата окончания (Месяц/Год)
+- Город и Штат
+- Должность (Driver или Owner-Operator)</span></div>
                 </div>
 
                 <!-- Script 3 -->
@@ -586,7 +602,10 @@
                             <span class="copy-feedback shadow-lg">Copied!</span>
                         </button>
                     </div>
-                    <div class="p-5 text-slate-600 font-mono text-sm leading-relaxed bg-white selection:bg-blue-100 flex-1" id="script3">Click on the link, login, go to 'Open Form', scroll down and click 'Approve Changes' then 'Submit for Review'.</div>
+                    <div class="p-5 text-slate-600 font-mono text-sm leading-relaxed bg-white selection:bg-blue-100 flex-1" id="script3">
+                        <span class="script-en">Click on the link, login, go to 'Open Form', scroll down and click 'Approve Changes' then 'Submit for Review'.</span>
+                        <span class="script-ru hidden">Перейдите по ссылке, войдите в систему, нажмите 'Open Form', прокрутите в самый низ и нажмите 'Approve Changes', а затем кнопку 'Submit for Review'.</span>
+                    </div>
                 </div>
 
                 <!-- Script 4 -->
@@ -598,7 +617,10 @@
                             <span class="copy-feedback shadow-lg">Copied!</span>
                         </button>
                     </div>
-                    <div class="p-5 text-slate-600 font-mono text-sm leading-relaxed bg-white selection:bg-blue-100 flex-1" id="script4">You must visit the DMV and update your license to match your current residence.</div>
+                    <div class="p-5 text-slate-600 font-mono text-sm leading-relaxed bg-white selection:bg-blue-100 flex-1" id="script4">
+                        <span class="script-en">You must visit the DMV and update your license to match your current residence.</span>
+                        <span class="script-ru hidden">Вам необходимо посетить DMV и обновить водительское удостоверение, чтобы адрес в правах совпадал с вашим текущим местом жительства.</span>
+                    </div>
                 </div>
 
                 <!-- Script 5 (Troubleshooting) -->
@@ -610,7 +632,10 @@
                             <span class="copy-feedback shadow-lg">Copied!</span>
                         </button>
                     </div>
-                    <div class="p-5 text-slate-600 font-mono text-sm leading-relaxed bg-white selection:bg-blue-100 flex-1" id="script5">Please check your SPAM or JUNK folder for the email from FleetCare Pro. Sometimes it gets filtered out automatically.</div>
+                    <div class="p-5 text-slate-600 font-mono text-sm leading-relaxed bg-white selection:bg-blue-100 flex-1" id="script5">
+                        <span class="script-en">Please check your SPAM or JUNK folder for the email from FleetCare Pro. Sometimes it gets filtered out automatically.</span>
+                        <span class="script-ru hidden">Пожалуйста, проверьте папку SPAM (или Рассылки) на наличие письма от FleetCare Pro. Иногда почтовые сервисы фильтруют его автоматически.</span>
+                    </div>
                 </div>
 
                 <!-- Script 6 (Troubleshooting) -->
@@ -622,7 +647,10 @@
                             <span class="copy-feedback shadow-lg">Copied!</span>
                         </button>
                     </div>
-                    <div class="p-5 text-slate-600 font-mono text-sm leading-relaxed bg-white selection:bg-blue-100 flex-1" id="script6">Please click 'Forgot Password' and reset it via your email. It's a standard security procedure. Check spam/junk after requesting the link.</div>
+                    <div class="p-5 text-slate-600 font-mono text-sm leading-relaxed bg-white selection:bg-blue-100 flex-1" id="script6">
+                        <span class="script-en">Please click 'Forgot Password' and reset it via your email. It's a standard security procedure. Check spam/junk after requesting the link.</span>
+                        <span class="script-ru hidden">Пожалуйста, нажмите 'Forgot Password' и сбросьте пароль через email. Это стандартная процедура безопасности. Обязательно проверьте папку спам после того, как запросите ссылку.</span>
+                    </div>
                 </div>
             </div>
 
@@ -1048,6 +1076,32 @@
             const isExpanded = button.getAttribute('aria-expanded') === 'true';
             button.setAttribute('aria-expanded', !isExpanded);
             item.classList.toggle('active');
+        }
+
+        // Language Toggle for Scripts
+        function toggleScriptLanguage(lang) {
+            const btnEn = document.getElementById('btn-lang-en');
+            const btnRu = document.getElementById('btn-lang-ru');
+            const scriptsEn = document.querySelectorAll('.script-en');
+            const scriptsRu = document.querySelectorAll('.script-ru');
+
+            if (lang === 'en') {
+                btnEn.classList.add('bg-white', 'text-primary', 'shadow-sm');
+                btnEn.classList.remove('text-slate-500', 'hover:text-slate-700');
+                btnRu.classList.remove('bg-white', 'text-primary', 'shadow-sm');
+                btnRu.classList.add('text-slate-500', 'hover:text-slate-700');
+
+                scriptsEn.forEach(el => el.classList.remove('hidden'));
+                scriptsRu.forEach(el => el.classList.add('hidden'));
+            } else {
+                btnRu.classList.add('bg-white', 'text-primary', 'shadow-sm');
+                btnRu.classList.remove('text-slate-500', 'hover:text-slate-700');
+                btnEn.classList.remove('bg-white', 'text-primary', 'shadow-sm');
+                btnEn.classList.add('text-slate-500', 'hover:text-slate-700');
+
+                scriptsRu.forEach(el => el.classList.remove('hidden'));
+                scriptsEn.forEach(el => el.classList.add('hidden'));
+            }
         }
 
         // Copy Function
