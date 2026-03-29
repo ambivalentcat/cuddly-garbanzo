@@ -9,6 +9,7 @@
     <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700&display=swap" rel="stylesheet">
     <script>
         tailwind.config = {
+            darkMode: 'class',
             theme: {
                 extend: {
                     fontFamily: {
@@ -21,6 +22,9 @@
                         accent: '#f59e0b', // amber-500
                         danger: '#ef4444', // red-500
                         success: '#10b981', // emerald-500
+                        dark_bg: '#0f172a', // slate-900
+                        dark_surface: '#1e293b', // slate-800
+                        dark_border: '#334155', // slate-700
                     },
                     animation: {
                         'stripes': 'stripes 1s linear infinite',
@@ -56,7 +60,7 @@
         }
     </script>
     <style>
-        body { font-family: 'Inter', sans-serif; background-color: #f8fafc; scroll-behavior: smooth; }
+        body { font-family: 'Inter', sans-serif; scroll-behavior: smooth; }
         
         /* Smooth Content Transitions */
         .section-content { display: none; opacity: 0; transform: translateY(15px); }
@@ -71,6 +75,8 @@
         ::-webkit-scrollbar-track { background: transparent; }
         ::-webkit-scrollbar-thumb { background: #cbd5e1; border-radius: 10px; }
         ::-webkit-scrollbar-thumb:hover { background: #94a3b8; }
+        .dark ::-webkit-scrollbar-thumb { background: #475569; }
+        .dark ::-webkit-scrollbar-thumb:hover { background: #64748b; }
 
         /* Accordions */
         .accordion-content { max-height: 0; overflow: hidden; transition: max-height 0.4s cubic-bezier(0.4, 0, 0.2, 1); }
@@ -110,50 +116,55 @@
 
         /* Search Highlight */
         mark.highlight { background-color: #fef08a; color: #854d0e; border-radius: 2px; padding: 0 2px; font-weight: 600; box-shadow: 0 1px 2px rgba(0,0,0,0.1); }
+        .dark mark.highlight { background-color: #ca8a04; color: #fef08a; }
 
         /* Print Styles */
         @media print {
-            body { background: white !important; }
-            #sidebar, .md\:hidden, #mobile-overlay, #back-to-top, .copy-btn, .pagination-controls { display: none !important; }
-            main { margin: 0 !important; padding: 0 !important; overflow: visible !important; height: auto !important; background: white !important; }
+            body, main { background: white !important; color: black !important; }
+            #sidebar, .md\:hidden, #mobile-overlay, #back-to-top, .copy-btn, .pagination-controls, .theme-toggle, .smart-status-panel { display: none !important; }
+            main { margin: 0 !important; padding: 0 !important; overflow: visible !important; height: auto !important; }
             .section-content { display: block !important; opacity: 1 !important; transform: none !important; animation: none !important; margin-bottom: 2rem !important; page-break-inside: avoid; }
             .accordion-content { max-height: none !important; }
             .accordion-item { break-inside: avoid; border: 1px solid #e2e8f0 !important; margin-bottom: 1rem !important; }
             .shadow-sm, .shadow-md, .shadow-lg, .shadow-xl, .shadow-inner { box-shadow: none !important; }
-            * { color: black !important; -webkit-print-color-adjust: exact; print-color-adjust: exact; }
+            * { -webkit-print-color-adjust: exact; print-color-adjust: exact; }
             mark.highlight { background: transparent !important; font-weight: bold !important; color: black !important; }
             .print-break-before { page-break-before: always; }
+            
+            /* Print Header & Footer */
+            .print-header-block { display: block !important; text-align: center; margin-bottom: 30px; border-bottom: 2px solid #1e3a8a; padding-bottom: 15px; }
+            .print-signature-block { display: block !important; margin-top: 50px; page-break-inside: avoid; border-top: 1px solid #cbd5e1; padding-top: 20px; }
         }
+        .print-header-block, .print-signature-block { display: none; }
     </style>
 </head>
-<body class="text-slate-800 h-screen flex flex-col md:flex-row overflow-hidden relative antialiased">
+<body class="text-slate-800 bg-[#f4f7f9] dark:bg-dark_bg dark:text-slate-200 h-screen flex flex-col md:flex-row overflow-hidden relative antialiased transition-colors duration-300">
 
     <!-- Custom Modal for Confirmation -->
     <div id="confirm-modal" class="fixed inset-0 z-[100] hidden items-center justify-center">
-        <!-- Backdrop -->
-        <div class="absolute inset-0 bg-slate-900/40 backdrop-blur-sm transition-opacity" onclick="closeModal()"></div>
-        <!-- Modal Content -->
-        <div class="relative bg-white rounded-2xl shadow-2xl w-full max-w-sm p-6 m-4 animate-scale-up border border-slate-100">
-            <div class="w-12 h-12 rounded-full bg-red-100 flex items-center justify-center text-danger mb-4 mx-auto">
+        <div class="absolute inset-0 bg-slate-900/60 backdrop-blur-sm transition-opacity" onclick="closeModal()"></div>
+        <div class="relative bg-white dark:bg-dark_surface rounded-2xl shadow-2xl w-full max-w-sm p-6 m-4 animate-scale-up border border-slate-100 dark:border-dark_border">
+            <div class="w-12 h-12 rounded-full bg-red-100 dark:bg-red-900/30 flex items-center justify-center text-danger mb-4 mx-auto">
                 <i class="fas fa-exclamation-triangle text-xl"></i>
             </div>
-            <h3 class="text-lg font-bold text-center text-slate-800 mb-2">Сбросить чек-лист?</h3>
-            <p class="text-sm text-center text-slate-500 mb-6">Это действие удалит все сохраненные отметки о готовности. Вы уверены?</p>
+            <h3 class="text-lg font-bold text-center text-slate-800 dark:text-white mb-2">Сбросить чек-лист?</h3>
+            <p class="text-sm text-center text-slate-500 dark:text-slate-400 mb-6">Это действие удалит все сохраненные отметки о готовности. Вы уверены?</p>
             <div class="flex gap-3">
-                <button onclick="closeModal()" class="flex-1 px-4 py-2.5 rounded-xl border border-slate-200 text-slate-600 font-semibold hover:bg-slate-50 transition-colors focus:outline-none">Отмена</button>
-                <button onclick="confirmClearData()" class="flex-1 px-4 py-2.5 rounded-xl bg-danger text-white font-semibold hover:bg-red-600 transition-colors shadow-sm shadow-red-200 focus:outline-none">Сбросить</button>
+                <button onclick="closeModal()" class="flex-1 px-4 py-2.5 rounded-xl border border-slate-200 dark:border-dark_border text-slate-600 dark:text-slate-300 font-semibold hover:bg-slate-50 dark:hover:bg-slate-700 transition-colors focus:outline-none">Отмена</button>
+                <button onclick="confirmClearData()" class="flex-1 px-4 py-2.5 rounded-xl bg-danger text-white font-semibold hover:bg-red-600 transition-colors shadow-sm focus:outline-none">Сбросить</button>
             </div>
         </div>
     </div>
 
     <!-- Mobile Header -->
-    <div class="md:hidden bg-primary/95 backdrop-blur-md text-white p-4 flex justify-between items-center z-30 shadow-md flex-shrink-0 border-b border-blue-800">
+    <div class="md:hidden bg-primary/95 dark:bg-slate-950/95 backdrop-blur-md text-white p-4 flex justify-between items-center z-30 shadow-md flex-shrink-0 border-b border-blue-800 dark:border-slate-800">
         <h1 class="text-lg font-bold flex items-center gap-2">
             <i class="fas fa-shield-alt text-accent drop-shadow-md"></i> AIST Safety
         </h1>
         <div class="flex items-center gap-3">
-            <button onclick="window.print()" class="text-blue-200 hover:text-white p-2" aria-label="Печать документа">
-                <i class="fas fa-print"></i>
+            <button onclick="toggleTheme()" class="theme-toggle text-blue-200 hover:text-white p-2" aria-label="Переключить тему">
+                <i class="fas fa-moon dark:hidden"></i>
+                <i class="fas fa-sun hidden dark:block text-accent"></i>
             </button>
             <button onclick="toggleMobileMenu()" class="text-2xl focus:outline-none hover:text-accent transition-colors active:scale-90" aria-label="Меню навигации">
                 <i class="fas fa-bars"></i>
@@ -162,19 +173,19 @@
     </div>
 
     <!-- Mobile Overlay Backdrop -->
-    <div id="mobile-overlay" onclick="toggleMobileMenu()" class="fixed inset-0 bg-slate-900/60 z-40 hidden md:hidden backdrop-blur-sm transition-opacity duration-300"></div>
+    <div id="mobile-overlay" onclick="toggleMobileMenu()" class="fixed inset-0 bg-slate-900/80 z-40 hidden md:hidden backdrop-blur-sm transition-opacity duration-300"></div>
 
     <!-- Sidebar -->
-    <aside id="sidebar" class="fixed md:relative inset-y-0 left-0 w-72 bg-gradient-to-b from-primary to-blue-950 text-white flex flex-col h-full shadow-2xl z-50 transform -translate-x-full md:translate-x-0 transition-transform duration-400 cubic-bezier(0.4, 0, 0.2, 1)">
-        <div class="p-6 border-b border-blue-800/50 flex justify-between items-center relative overflow-hidden">
-            <div class="absolute top-0 right-0 w-32 h-32 bg-blue-500/10 rounded-full blur-3xl -mr-10 -mt-10"></div>
+    <aside id="sidebar" class="fixed md:relative inset-y-0 left-0 w-72 bg-gradient-to-b from-primary to-blue-950 dark:from-slate-950 dark:to-slate-900 text-white flex flex-col h-full shadow-2xl z-50 transform -translate-x-full md:translate-x-0 transition-transform duration-400 cubic-bezier(0.4, 0, 0.2, 1)">
+        <div class="p-6 border-b border-blue-800/50 dark:border-slate-800 flex justify-between items-center relative overflow-hidden">
+            <div class="absolute top-0 right-0 w-32 h-32 bg-blue-500/10 dark:bg-white/5 rounded-full blur-3xl -mr-10 -mt-10"></div>
             <div class="relative z-10 w-full flex justify-between items-center">
                 <div>
                     <h1 class="text-xl font-bold tracking-tight flex items-center gap-2 text-white drop-shadow-md">
                         <i class="fas fa-shield-alt text-accent"></i>
                         AIST Safety
                     </h1>
-                    <p class="text-blue-300 text-[10px] mt-1.5 uppercase tracking-widest font-bold opacity-80">Driver Onboarding SOP</p>
+                    <p class="text-blue-300 dark:text-slate-400 text-[10px] mt-1.5 uppercase tracking-widest font-bold opacity-80">Driver Onboarding SOP</p>
                 </div>
             </div>
             <!-- Close button for mobile -->
@@ -184,98 +195,109 @@
         </div>
         
         <nav class="flex-1 overflow-y-auto py-5 px-3 space-y-1.5" id="nav-menu">
-            <button onclick="switchTab('intro')" class="nav-btn active w-full flex items-center gap-3 px-4 py-3.5 rounded-xl text-left transition-all duration-300 bg-gradient-to-r from-blue-800 to-primary text-white font-medium shadow-md active:scale-[0.98]" data-target="intro">
-                <i class="fas fa-home w-5 text-center text-blue-300"></i> <span class="tracking-wide text-sm">Введение и База</span>
+            <button onclick="switchTab('intro')" class="nav-btn active w-full flex items-center gap-3 px-4 py-3.5 rounded-xl text-left transition-all duration-300 bg-gradient-to-r from-blue-800 to-primary dark:from-slate-800 dark:to-slate-700 text-white font-medium shadow-md active:scale-[0.98]" data-target="intro">
+                <i class="fas fa-home w-5 text-center text-blue-300 dark:text-slate-300"></i> <span class="tracking-wide text-sm">Введение и База</span>
             </button>
-            <button onclick="switchTab('workflow')" class="nav-btn w-full flex items-center gap-3 px-4 py-3.5 rounded-xl text-left text-blue-200 hover:bg-blue-800/50 hover:text-white transition-all duration-300 active:scale-[0.98]" data-target="workflow">
+            <button onclick="switchTab('workflow')" class="nav-btn w-full flex items-center gap-3 px-4 py-3.5 rounded-xl text-left text-blue-200 dark:text-slate-400 hover:bg-blue-800/50 dark:hover:bg-slate-800 hover:text-white transition-all duration-300 active:scale-[0.98]" data-target="workflow">
                 <i class="fas fa-project-diagram w-5 text-center opacity-70"></i> <span class="tracking-wide text-sm">Рабочий Процесс</span>
             </button>
-            <button onclick="switchTab('rules')" class="nav-btn w-full flex items-center gap-3 px-4 py-3.5 rounded-xl text-left text-blue-200 hover:bg-blue-800/50 hover:text-white transition-all duration-300 active:scale-[0.98]" data-target="rules">
+            <button onclick="switchTab('rules')" class="nav-btn w-full flex items-center gap-3 px-4 py-3.5 rounded-xl text-left text-blue-200 dark:text-slate-400 hover:bg-blue-800/50 dark:hover:bg-slate-800 hover:text-white transition-all duration-300 active:scale-[0.98]" data-target="rules">
                 <i class="fas fa-exclamation-triangle w-5 text-center opacity-70"></i> <span class="tracking-wide text-sm">Правила FMCSA</span>
             </button>
-            <button onclick="switchTab('scripts')" class="nav-btn w-full flex items-center gap-3 px-4 py-3.5 rounded-xl text-left text-blue-200 hover:bg-blue-800/50 hover:text-white transition-all duration-300 active:scale-[0.98]" data-target="scripts">
+            <button onclick="switchTab('scripts')" class="nav-btn w-full flex items-center gap-3 px-4 py-3.5 rounded-xl text-left text-blue-200 dark:text-slate-400 hover:bg-blue-800/50 dark:hover:bg-slate-800 hover:text-white transition-all duration-300 active:scale-[0.98]" data-target="scripts">
                 <i class="fas fa-comment-dots w-5 text-center opacity-70"></i> <span class="tracking-wide text-sm">Скрипты и Шаблоны</span>
             </button>
-            <button onclick="switchTab('cases')" class="nav-btn w-full flex items-center gap-3 px-4 py-3.5 rounded-xl text-left text-blue-200 hover:bg-blue-800/50 hover:text-white transition-all duration-300 active:scale-[0.98]" data-target="cases">
+            <button onclick="switchTab('cases')" class="nav-btn w-full flex items-center gap-3 px-4 py-3.5 rounded-xl text-left text-blue-200 dark:text-slate-400 hover:bg-blue-800/50 dark:hover:bg-slate-800 hover:text-white transition-all duration-300 active:scale-[0.98]" data-target="cases">
                 <i class="fas fa-user-shield w-5 text-center opacity-70"></i> <span class="tracking-wide text-sm">Сложные Кейсы</span>
             </button>
-            <button onclick="switchTab('glossary')" class="nav-btn w-full flex items-center gap-3 px-4 py-3.5 rounded-xl text-left text-blue-200 hover:bg-blue-800/50 hover:text-white transition-all duration-300 active:scale-[0.98]" data-target="glossary">
+            <button onclick="switchTab('glossary')" class="nav-btn w-full flex items-center gap-3 px-4 py-3.5 rounded-xl text-left text-blue-200 dark:text-slate-400 hover:bg-blue-800/50 dark:hover:bg-slate-800 hover:text-white transition-all duration-300 active:scale-[0.98]" data-target="glossary">
                 <i class="fas fa-book w-5 text-center opacity-70"></i> <span class="tracking-wide text-sm">Глоссарий Терминов</span>
             </button>
-            <div class="pt-4 mt-2 border-t border-blue-800/50">
-                <button onclick="switchTab('checklist')" class="nav-btn w-full flex items-center gap-3 px-4 py-3.5 rounded-xl text-left text-blue-200 hover:bg-blue-800/50 hover:text-white transition-all duration-300 active:scale-[0.98] border border-blue-800/50 bg-blue-900/20" data-target="checklist">
+            <div class="pt-4 mt-2 border-t border-blue-800/50 dark:border-slate-800">
+                <button onclick="switchTab('checklist')" class="nav-btn w-full flex items-center gap-3 px-4 py-3.5 rounded-xl text-left text-blue-200 dark:text-slate-400 hover:bg-blue-800/50 dark:hover:bg-slate-800 hover:text-white transition-all duration-300 active:scale-[0.98] border border-blue-800/50 dark:border-slate-700 bg-blue-900/20 dark:bg-slate-800/50" data-target="checklist">
                     <i class="fas fa-check-double w-5 text-center text-success"></i> <span class="tracking-wide text-sm font-semibold">Финальный Чек-лист</span>
                 </button>
             </div>
             
             <!-- Quick Actions -->
             <div class="px-4 mt-4 flex gap-2">
-                <button onclick="window.print()" class="flex-1 bg-blue-800/40 hover:bg-blue-700/60 border border-blue-700/50 rounded-lg py-2 text-xs font-bold text-blue-100 transition-colors flex items-center justify-center gap-2" title="Распечатать документ">
+                <button onclick="window.print()" class="flex-1 bg-blue-800/40 dark:bg-slate-800 hover:bg-blue-700/60 dark:hover:bg-slate-700 border border-blue-700/50 dark:border-slate-600 rounded-lg py-2 text-xs font-bold text-blue-100 transition-colors flex items-center justify-center gap-2" title="Распечатать документ">
                     <i class="fas fa-print"></i> Печать
                 </button>
-                <button onclick="requestClearData()" class="flex-1 bg-red-900/20 hover:bg-red-900/50 border border-red-800/30 rounded-lg py-2 text-xs font-bold text-red-200 transition-colors flex items-center justify-center gap-2" title="Сбросить сохраненные данные">
+                <button onclick="requestClearData()" class="flex-1 bg-red-900/20 dark:bg-red-900/10 hover:bg-red-900/50 dark:hover:bg-red-900/30 border border-red-800/30 dark:border-red-900/50 rounded-lg py-2 text-xs font-bold text-red-200 transition-colors flex items-center justify-center gap-2" title="Сбросить сохраненные данные">
                     <i class="fas fa-trash-alt"></i> Сброс
                 </button>
             </div>
         </nav>
-        <div class="p-4 border-t border-blue-800/50 text-[11px] text-blue-400/60 text-center font-mono tracking-wider">
-            AIST Safety Consulting v2.6
+        <div class="p-4 border-t border-blue-800/50 dark:border-slate-800 text-[11px] text-blue-400/60 dark:text-slate-500 text-center font-mono tracking-wider flex justify-between items-center">
+            <span>AIST Safety v3.0</span>
+            <button onclick="toggleTheme()" class="theme-toggle hover:text-white transition-colors" title="Темная/Светлая тема">
+                <i class="fas fa-moon dark:hidden"></i>
+                <i class="fas fa-sun hidden dark:block text-accent"></i>
+            </button>
         </div>
     </aside>
 
     <!-- Main Content -->
-    <main id="main-content" class="flex-1 h-full overflow-y-auto bg-[#f4f7f9] relative p-6 md:p-8 scroll-smooth">
+    <main id="main-content" class="flex-1 h-full overflow-y-auto relative p-6 md:p-8 scroll-smooth">
         
+        <!-- PRINT ONLY HEADER -->
+        <div class="print-header-block">
+            <h1 style="font-size: 24px; font-weight: bold; margin-bottom: 5px;">AIST Safety Consulting</h1>
+            <p style="font-size: 14px; color: #475569;">Driver Qualification File (DQF) – Compliance SOP</p>
+            <p style="font-size: 12px; margin-top: 10px;" id="print-date"></p>
+        </div>
+
         <!-- SECTION: Intro -->
         <div id="intro" class="section-content active max-w-5xl mx-auto pb-12">
-            <div class="bg-white rounded-3xl shadow-sm border border-slate-200/60 p-6 md:p-10 mb-8 hover:shadow-lg transition-shadow duration-300">
-                <div class="inline-flex items-center gap-2 px-3 py-1 rounded-full bg-blue-50 text-primary text-xs font-bold tracking-wider mb-4 border border-blue-100 uppercase">
-                    <span class="w-2 h-2 rounded-full bg-primary animate-pulse"></span> Главная страница
+            <div class="bg-white dark:bg-dark_surface rounded-3xl shadow-sm border border-slate-200/60 dark:border-dark_border p-6 md:p-10 mb-8 hover:shadow-lg transition-all duration-300">
+                <div class="inline-flex items-center gap-2 px-3 py-1 rounded-full bg-blue-50 dark:bg-blue-900/20 text-primary dark:text-blue-400 text-xs font-bold tracking-wider mb-4 border border-blue-100 dark:border-blue-800 uppercase">
+                    <span class="w-2 h-2 rounded-full bg-primary dark:bg-blue-400 animate-pulse"></span> Главная страница
                 </div>
-                <h2 class="text-3xl md:text-4xl font-extrabold text-slate-800 mb-6 tracking-tight">Роль Safety & Compliance Officer</h2>
-                <p class="text-base md:text-lg text-slate-600 mb-8 border-l-4 border-primary pl-5 py-3 bg-gradient-to-r from-blue-50/50 to-transparent rounded-r-xl">
+                <h2 class="text-3xl md:text-4xl font-extrabold text-slate-800 dark:text-white mb-6 tracking-tight">Роль Safety & Compliance Officer</h2>
+                <p class="text-base md:text-lg text-slate-600 dark:text-slate-300 mb-8 border-l-4 border-primary dark:border-blue-500 pl-5 py-3 bg-gradient-to-r from-blue-50/50 dark:from-blue-900/10 to-transparent rounded-r-xl">
                     Вы являетесь «первой линией обороны» <b>AIST Safety Consulting</b>. Ваша задача — не просто вводить данные, а обеспечивать юридическую чистоту и безопасность каждой мили. Любая ошибка превращается в штраф при аудите DOT, иск за <b>«небрежный найм» (negligent hiring)</b> или юридическую катастрофу при аварии.
                 </p>
                 
                 <div class="grid md:grid-cols-2 gap-6">
-                    <div class="bg-white rounded-2xl p-6 border border-slate-100 hover:border-blue-200 shadow-sm hover:shadow-md transition-all duration-300 group">
-                        <h3 class="font-bold text-primary mb-3 flex items-center gap-3 text-lg group-hover:text-blue-700 transition-colors">
-                            <div class="w-10 h-10 rounded-lg bg-blue-50 flex items-center justify-center group-hover:bg-blue-100 transition-colors"><i class="fas fa-file-contract text-blue-500"></i></div>
+                    <div class="bg-white dark:bg-slate-800/50 rounded-2xl p-6 border border-slate-100 dark:border-dark_border hover:border-blue-200 dark:hover:border-blue-700 shadow-sm hover:shadow-md transition-all duration-300 group">
+                        <h3 class="font-bold text-primary dark:text-blue-400 mb-3 flex items-center gap-3 text-lg group-hover:text-blue-700 dark:group-hover:text-blue-300 transition-colors">
+                            <div class="w-10 h-10 rounded-lg bg-blue-50 dark:bg-blue-900/30 flex items-center justify-center group-hover:bg-blue-100 dark:group-hover:bg-blue-800/50 transition-colors"><i class="fas fa-file-contract text-blue-500 dark:text-blue-400"></i></div>
                             Формирование DQF
                         </h3>
-                        <p class="text-sm text-slate-600 leading-relaxed">Вы формируете безупречный <b>Driver Qualification File (DQF)</b>, соответствующий жестким стандартам FMCSA. Это фундамент, защищающий лицензию компании.</p>
+                        <p class="text-sm text-slate-600 dark:text-slate-400 leading-relaxed">Вы формируете безупречный <b>Driver Qualification File (DQF)</b>, соответствующий жестким стандартам FMCSA. Это фундамент, защищающий лицензию компании.</p>
                     </div>
-                    <div class="bg-white rounded-2xl p-6 border border-slate-100 hover:border-emerald-200 shadow-sm hover:shadow-md transition-all duration-300 group">
-                        <h3 class="font-bold text-primary mb-3 flex items-center gap-3 text-lg group-hover:text-blue-700 transition-colors">
-                            <div class="w-10 h-10 rounded-lg bg-emerald-50 flex items-center justify-center group-hover:bg-emerald-100 transition-colors"><i class="fas fa-stopwatch text-emerald-500"></i></div>
+                    <div class="bg-white dark:bg-slate-800/50 rounded-2xl p-6 border border-slate-100 dark:border-dark_border hover:border-emerald-200 dark:hover:border-emerald-700 shadow-sm hover:shadow-md transition-all duration-300 group">
+                        <h3 class="font-bold text-primary dark:text-blue-400 mb-3 flex items-center gap-3 text-lg group-hover:text-blue-700 dark:group-hover:text-blue-300 transition-colors">
+                            <div class="w-10 h-10 rounded-lg bg-emerald-50 dark:bg-emerald-900/20 flex items-center justify-center group-hover:bg-emerald-100 dark:group-hover:bg-emerald-900/40 transition-colors"><i class="fas fa-stopwatch text-emerald-500 dark:text-emerald-400"></i></div>
                             Оперативность (10-15 мин)
                         </h3>
-                        <p class="text-sm text-slate-600 leading-relaxed">В логистике водителя «перехватывают» за считанные минуты. Задержка свыше 10-15 минут увеличивает риск того, что кандидат уйдет к конкуренту. Скорость повышает конверсию на 40%.</p>
+                        <p class="text-sm text-slate-600 dark:text-slate-400 leading-relaxed">В логистике водителя «перехватывают» за считанные минуты. Задержка свыше 10-15 минут увеличивает риск того, что кандидат уйдет к конкуренту. Скорость повышает конверсию на 40%.</p>
                     </div>
                 </div>
 
-                <h3 class="text-xl font-bold text-slate-800 mt-10 mb-5 flex items-center gap-2">
-                    <i class="fas fa-network-wired text-slate-400"></i> Экосистема работы
+                <h3 class="text-xl font-bold text-slate-800 dark:text-white mt-10 mb-5 flex items-center gap-2">
+                    <i class="fas fa-network-wired text-slate-400 dark:text-slate-500"></i> Экосистема работы
                 </h3>
                 <div class="grid grid-cols-1 sm:grid-cols-3 gap-5">
-                    <div class="flex flex-col gap-3 bg-white p-5 rounded-2xl border border-blue-100 hover:border-blue-300 hover:shadow-lg transition-all duration-300 group">
-                        <div class="w-14 h-14 rounded-2xl bg-gradient-to-br from-blue-50 to-blue-100 flex items-center justify-center text-blue-600 text-2xl group-hover:scale-110 transition-transform"><i class="fab fa-telegram"></i></div>
-                        <div><strong class="block text-slate-800 text-lg">Telegram</strong><span class="text-sm text-slate-500">Мониторинг групп и штаб</span></div>
+                    <div class="flex flex-col gap-3 bg-white dark:bg-slate-800/80 p-5 rounded-2xl border border-blue-100 dark:border-blue-900/50 hover:border-blue-300 dark:hover:border-blue-700 hover:shadow-lg transition-all duration-300 group">
+                        <div class="w-14 h-14 rounded-2xl bg-gradient-to-br from-blue-50 to-blue-100 dark:from-blue-900/40 dark:to-blue-800/40 flex items-center justify-center text-blue-600 dark:text-blue-400 text-2xl group-hover:scale-110 transition-transform"><i class="fab fa-telegram"></i></div>
+                        <div><strong class="block text-slate-800 dark:text-white text-lg">Telegram</strong><span class="text-sm text-slate-500 dark:text-slate-400">Мониторинг групп и штаб</span></div>
                     </div>
-                    <div class="flex flex-col gap-3 bg-white p-5 rounded-2xl border border-purple-100 hover:border-purple-300 hover:shadow-lg transition-all duration-300 group">
-                        <div class="w-14 h-14 rounded-2xl bg-gradient-to-br from-purple-50 to-purple-100 flex items-center justify-center text-purple-600 text-2xl group-hover:scale-110 transition-transform"><i class="fas fa-phone-alt"></i></div>
-                        <div><strong class="block text-slate-800 text-lg">Dialpad</strong><span class="text-sm text-slate-500">Связь и форматирование</span></div>
+                    <div class="flex flex-col gap-3 bg-white dark:bg-slate-800/80 p-5 rounded-2xl border border-purple-100 dark:border-purple-900/50 hover:border-purple-300 dark:hover:border-purple-700 hover:shadow-lg transition-all duration-300 group">
+                        <div class="w-14 h-14 rounded-2xl bg-gradient-to-br from-purple-50 to-purple-100 dark:from-purple-900/40 dark:to-purple-800/40 flex items-center justify-center text-purple-600 dark:text-purple-400 text-2xl group-hover:scale-110 transition-transform"><i class="fas fa-phone-alt"></i></div>
+                        <div><strong class="block text-slate-800 dark:text-white text-lg">Dialpad</strong><span class="text-sm text-slate-500 dark:text-slate-400">Связь и форматирование</span></div>
                     </div>
-                    <div class="flex flex-col gap-3 bg-white p-5 rounded-2xl border border-emerald-100 hover:border-emerald-300 hover:shadow-lg transition-all duration-300 group">
-                        <div class="w-14 h-14 rounded-2xl bg-gradient-to-br from-emerald-50 to-emerald-100 flex items-center justify-center text-emerald-600 text-2xl group-hover:scale-110 transition-transform"><i class="fas fa-desktop"></i></div>
-                        <div><strong class="block text-slate-800 text-lg">FleetCare Pro</strong><span class="text-sm text-slate-500">Святая святых (Анкеты)</span></div>
+                    <div class="flex flex-col gap-3 bg-white dark:bg-slate-800/80 p-5 rounded-2xl border border-emerald-100 dark:border-emerald-900/50 hover:border-emerald-300 dark:hover:border-emerald-700 hover:shadow-lg transition-all duration-300 group">
+                        <div class="w-14 h-14 rounded-2xl bg-gradient-to-br from-emerald-50 to-emerald-100 dark:from-emerald-900/40 dark:to-emerald-800/40 flex items-center justify-center text-emerald-600 dark:text-emerald-400 text-2xl group-hover:scale-110 transition-transform"><i class="fas fa-desktop"></i></div>
+                        <div><strong class="block text-slate-800 dark:text-white text-lg">FleetCare Pro</strong><span class="text-sm text-slate-500 dark:text-slate-400">Святая святых (Анкеты)</span></div>
                     </div>
                 </div>
             </div>
 
             <!-- Pagination Controls -->
-            <div class="pagination-controls mt-8 flex justify-end border-t border-slate-200/60 pt-6">
-                <button onclick="switchTab('workflow')" class="flex items-center gap-2 bg-white border border-slate-200 hover:border-primary hover:text-primary px-5 py-2.5 rounded-xl font-semibold text-slate-600 transition-all shadow-sm group">
+            <div class="pagination-controls mt-8 flex justify-end border-t border-slate-200/60 dark:border-dark_border pt-6">
+                <button onclick="switchTab('workflow')" class="flex items-center gap-2 bg-white dark:bg-dark_surface border border-slate-200 dark:border-dark_border hover:border-primary dark:hover:border-blue-500 hover:text-primary dark:hover:text-blue-400 px-5 py-2.5 rounded-xl font-semibold text-slate-600 dark:text-slate-300 transition-all shadow-sm group">
                     Далее: Рабочий Процесс <i class="fas fa-arrow-right group-hover:translate-x-1 transition-transform"></i>
                 </button>
             </div>
@@ -283,22 +305,22 @@
 
         <!-- SECTION: Workflow -->
         <div id="workflow" class="section-content max-w-5xl mx-auto pb-12 print-break-before">
-            <h2 class="text-3xl font-extrabold text-slate-800 mb-8 flex items-center gap-3 tracking-tight">
-                <span class="bg-primary/10 text-primary w-12 h-12 flex items-center justify-center rounded-xl"><i class="fas fa-project-diagram"></i></span> Алгоритм онбординга
+            <h2 class="text-3xl font-extrabold text-slate-800 dark:text-white mb-8 flex items-center gap-3 tracking-tight">
+                <span class="bg-primary/10 dark:bg-blue-900/30 text-primary dark:text-blue-400 w-12 h-12 flex items-center justify-center rounded-xl"><i class="fas fa-project-diagram"></i></span> Алгоритм онбординга
             </h2>
             
-            <div class="space-y-6 relative before:absolute before:inset-0 before:ml-6 md:before:ml-[2.25rem] before:-translate-x-px md:before:translate-x-0 before:h-full before:w-0.5 before:bg-gradient-to-b before:from-primary before:via-blue-300 before:to-transparent">
+            <div class="space-y-6 relative before:absolute before:inset-0 before:ml-6 md:before:ml-[2.25rem] before:-translate-x-px md:before:translate-x-0 before:h-full before:w-0.5 before:bg-gradient-to-b before:from-primary dark:before:from-blue-600 before:via-blue-300 dark:before:via-blue-800 before:to-transparent">
                 <!-- Step 1 -->
-                <div class="relative bg-white rounded-2xl shadow-sm border border-slate-200/80 p-6 md:p-8 ml-10 md:ml-16 hover:shadow-md hover:border-blue-200 transition-all duration-300 group">
-                    <div class="absolute -left-10 md:-left-16 top-6 w-12 h-12 bg-white border-4 border-primary text-primary rounded-full flex items-center justify-center font-extrabold text-xl shadow-sm z-10 group-hover:scale-110 group-hover:bg-primary group-hover:text-white transition-all duration-300">1</div>
+                <div class="relative bg-white dark:bg-dark_surface rounded-2xl shadow-sm border border-slate-200/80 dark:border-dark_border p-6 md:p-8 ml-10 md:ml-16 hover:shadow-md hover:border-blue-200 dark:hover:border-blue-700 transition-all duration-300 group">
+                    <div class="absolute -left-10 md:-left-16 top-6 w-12 h-12 bg-white dark:bg-dark_bg border-4 border-primary dark:border-blue-600 text-primary dark:text-blue-400 rounded-full flex items-center justify-center font-extrabold text-xl shadow-sm z-10 group-hover:scale-110 group-hover:bg-primary dark:group-hover:bg-blue-600 group-hover:text-white transition-all duration-300">1</div>
                     <div>
-                        <h3 class="text-xl font-bold text-slate-800 mb-4 tracking-tight">Инициация контакта и запуск Application</h3>
-                        <ul class="list-none text-slate-600 space-y-3">
-                            <li class="flex items-start gap-3"><i class="fas fa-check text-success mt-1"></i> <span><strong class="text-slate-800">Захват номера:</strong> Мониторинг групп в Telegram (напр. <i>Ruslan Applications</i>, <i>ASIA Applications</i>). Каждая новая заявка — приоритет №1.</span></li>
-                            <li class="flex items-start gap-3"><i class="fas fa-check text-success mt-1"></i> <span><strong class="text-slate-800">Проверка имени компании:</strong> Внимательно проверяйте, от имени какой компании-партнера вы звоните (ISD, Faris и т.д.).</span></li>
-                            <li class="flex items-start gap-3"><i class="fas fa-check text-success mt-1"></i> <span><strong class="text-slate-800">Форматирование (MANDATORY):</strong> В Dialpad строго: <code class="bg-slate-100 px-1.5 py-0.5 rounded text-primary font-mono text-sm shadow-inner">Имя Фамилия – Название компании</code>.</span></li>
-                            <li class="flex items-start gap-3"><i class="fas fa-check text-success mt-1"></i> <span><strong class="text-slate-800">Проверка дублей:</strong> Обязательный поиск в FCP (раздел CONTRACTS) перед отправкой.</span></li>
-                            <li class="p-3 bg-red-50/80 rounded-xl border border-red-100 mt-4 text-red-800 text-sm flex gap-3 shadow-sm">
+                        <h3 class="text-xl font-bold text-slate-800 dark:text-white mb-4 tracking-tight">Инициация контакта и запуск Application</h3>
+                        <ul class="list-none text-slate-600 dark:text-slate-300 space-y-3">
+                            <li class="flex items-start gap-3"><i class="fas fa-check text-success mt-1"></i> <span><strong class="text-slate-800 dark:text-slate-100">Захват номера:</strong> Мониторинг групп в Telegram (напр. <i>Ruslan Applications</i>, <i>ASIA Applications</i>). Каждая новая заявка — приоритет №1.</span></li>
+                            <li class="flex items-start gap-3"><i class="fas fa-check text-success mt-1"></i> <span><strong class="text-slate-800 dark:text-slate-100">Проверка имени компании:</strong> Внимательно проверяйте, от имени какой компании-партнера вы звоните (ISD, Faris и т.д.).</span></li>
+                            <li class="flex items-start gap-3"><i class="fas fa-check text-success mt-1"></i> <span><strong class="text-slate-800 dark:text-slate-100">Форматирование (MANDATORY):</strong> В Dialpad строго: <code class="bg-slate-100 dark:bg-slate-800 px-1.5 py-0.5 rounded text-primary dark:text-blue-300 font-mono text-sm shadow-inner">Имя Фамилия – Название компании</code>.</span></li>
+                            <li class="flex items-start gap-3"><i class="fas fa-check text-success mt-1"></i> <span><strong class="text-slate-800 dark:text-slate-100">Проверка дублей:</strong> Обязательный поиск в FCP (раздел CONTRACTS) перед отправкой.</span></li>
+                            <li class="p-3 bg-red-50/80 dark:bg-red-900/10 rounded-xl border border-red-100 dark:border-red-900/30 mt-4 text-red-800 dark:text-red-400 text-sm flex gap-3 shadow-sm">
                                 <i class="fas fa-exclamation-triangle mt-0.5 text-danger text-lg"></i>
                                 <span><strong class="font-bold">Критическое предупреждение:</strong> Водитель обязан заполнять анкету САМ. Не заполняйте данные с его слов, это ваша личная ответственность перед FMCSA за достоверность!</span>
                             </li>
@@ -307,26 +329,26 @@
                 </div>
 
                 <!-- Step 2 -->
-                <div class="relative bg-white rounded-2xl shadow-sm border border-slate-200/80 p-6 md:p-8 ml-10 md:ml-16 hover:shadow-md hover:border-blue-200 transition-all duration-300 group">
-                    <div class="absolute -left-10 md:-left-16 top-6 w-12 h-12 bg-white border-4 border-primary text-primary rounded-full flex items-center justify-center font-extrabold text-xl shadow-sm z-10 group-hover:scale-110 group-hover:bg-primary group-hover:text-white transition-all duration-300">2</div>
+                <div class="relative bg-white dark:bg-dark_surface rounded-2xl shadow-sm border border-slate-200/80 dark:border-dark_border p-6 md:p-8 ml-10 md:ml-16 hover:shadow-md hover:border-blue-200 dark:hover:border-blue-700 transition-all duration-300 group">
+                    <div class="absolute -left-10 md:-left-16 top-6 w-12 h-12 bg-white dark:bg-dark_bg border-4 border-primary dark:border-blue-600 text-primary dark:text-blue-400 rounded-full flex items-center justify-center font-extrabold text-xl shadow-sm z-10 group-hover:scale-110 group-hover:bg-primary dark:group-hover:bg-blue-600 group-hover:text-white transition-all duration-300">2</div>
                     <div>
-                        <h3 class="text-xl font-bold text-slate-800 mb-4 tracking-tight">Верификация CDL, SSN и Медкарты</h3>
+                        <h3 class="text-xl font-bold text-slate-800 dark:text-white mb-4 tracking-tight">Верификация CDL, SSN и Медкарты</h3>
                         <div class="grid lg:grid-cols-2 gap-5 text-sm">
-                            <div class="bg-slate-50 p-5 rounded-xl border border-slate-200/60">
-                                <h4 class="font-bold text-slate-800 mb-3 border-b border-slate-200 pb-2 text-primary flex items-center gap-2"><i class="fas fa-id-card"></i> Проверка CDL (Class A)</h4>
-                                <ul class="space-y-2.5 text-slate-600">
-                                    <li class="flex items-center gap-2"><div class="w-1.5 h-1.5 rounded-full bg-slate-400"></div> <b>Имя / DOB:</b> Совпадают до буквы.</li>
-                                    <li class="flex items-center gap-2"><div class="w-1.5 h-1.5 rounded-full bg-slate-400"></div> <b>Endorsements:</b> Перенести коды (напр. N).</li>
-                                    <li class="flex items-center gap-2"><div class="w-1.5 h-1.5 rounded-full bg-slate-400"></div> <b>Restrictions:</b> Указать все (напр. L).</li>
-                                    <li class="text-danger font-semibold bg-red-50 p-1.5 rounded flex items-center gap-2"><i class="fas fa-ban"></i> <b>Expiration Date:</b> Просрочка = OOS!</li>
+                            <div class="bg-slate-50 dark:bg-slate-800/50 p-5 rounded-xl border border-slate-200/60 dark:border-slate-700">
+                                <h4 class="font-bold text-slate-800 dark:text-white mb-3 border-b border-slate-200 dark:border-slate-700 pb-2 text-primary dark:text-blue-400 flex items-center gap-2"><i class="fas fa-id-card"></i> Проверка CDL (Class A)</h4>
+                                <ul class="space-y-2.5 text-slate-600 dark:text-slate-300">
+                                    <li class="flex items-center gap-2"><div class="w-1.5 h-1.5 rounded-full bg-slate-400 dark:bg-slate-500"></div> <b>Имя / DOB:</b> Совпадают до буквы.</li>
+                                    <li class="flex items-center gap-2"><div class="w-1.5 h-1.5 rounded-full bg-slate-400 dark:bg-slate-500"></div> <b>Endorsements:</b> Перенести коды (напр. N).</li>
+                                    <li class="flex items-center gap-2"><div class="w-1.5 h-1.5 rounded-full bg-slate-400 dark:bg-slate-500"></div> <b>Restrictions:</b> Указать все (напр. L).</li>
+                                    <li class="text-danger dark:text-red-400 font-semibold bg-red-50 dark:bg-red-900/20 p-1.5 rounded flex items-center gap-2"><i class="fas fa-ban"></i> <b>Expiration Date:</b> Просрочка = OOS!</li>
                                 </ul>
                             </div>
-                            <div class="bg-slate-50 p-5 rounded-xl border border-slate-200/60">
-                                <h4 class="font-bold text-slate-800 mb-3 border-b border-slate-200 pb-2 text-primary flex items-center gap-2"><i class="fas fa-file-medical"></i> SSN и Адреса</h4>
-                                <ul class="space-y-2.5 text-slate-600">
-                                    <li class="flex items-start gap-2"><div class="w-1.5 h-1.5 rounded-full bg-slate-400 mt-1.5"></div> <span><b>SSN:</b> Валидируется FCP. Проверять на наличие алертов (Warning/Error).</span></li>
-                                    <li class="flex items-start gap-2"><div class="w-1.5 h-1.5 rounded-full bg-slate-400 mt-1.5"></div> <span><b>Med Card:</b> Часто истекает раньше прав!</span></li>
-                                    <li class="text-accent-800 font-medium flex items-start gap-2"><i class="fas fa-map-marker-alt text-accent mt-1"></i> <span><b>Адрес:</b> Если не совпадает с CDL -> перенести в <b>Previous Address</b>.</span></li>
+                            <div class="bg-slate-50 dark:bg-slate-800/50 p-5 rounded-xl border border-slate-200/60 dark:border-slate-700">
+                                <h4 class="font-bold text-slate-800 dark:text-white mb-3 border-b border-slate-200 dark:border-slate-700 pb-2 text-primary dark:text-blue-400 flex items-center gap-2"><i class="fas fa-file-medical"></i> SSN и Адреса</h4>
+                                <ul class="space-y-2.5 text-slate-600 dark:text-slate-300">
+                                    <li class="flex items-start gap-2"><div class="w-1.5 h-1.5 rounded-full bg-slate-400 dark:bg-slate-500 mt-1.5"></div> <span><b>SSN:</b> Валидируется FCP. Проверять на наличие алертов (Warning/Error).</span></li>
+                                    <li class="flex items-start gap-2"><div class="w-1.5 h-1.5 rounded-full bg-slate-400 dark:bg-slate-500 mt-1.5"></div> <span><b>Med Card:</b> Часто истекает раньше прав!</span></li>
+                                    <li class="text-accent-800 dark:text-accent font-medium flex items-start gap-2"><i class="fas fa-map-marker-alt text-accent mt-1"></i> <span><b>Адрес:</b> Если не совпадает с CDL -> перенести в <b>Previous Address</b>.</span></li>
                                 </ul>
                             </div>
                         </div>
@@ -334,98 +356,98 @@
                 </div>
 
                 <!-- Step 3 -->
-                <div class="relative bg-white rounded-2xl shadow-sm border border-slate-200/80 p-6 md:p-8 ml-10 md:ml-16 hover:shadow-md hover:border-blue-200 transition-all duration-300 group">
-                    <div class="absolute -left-10 md:-left-16 top-6 w-12 h-12 bg-white border-4 border-primary text-primary rounded-full flex items-center justify-center font-extrabold text-xl shadow-sm z-10 group-hover:scale-110 group-hover:bg-primary group-hover:text-white transition-all duration-300">3</div>
+                <div class="relative bg-white dark:bg-dark_surface rounded-2xl shadow-sm border border-slate-200/80 dark:border-dark_border p-6 md:p-8 ml-10 md:ml-16 hover:shadow-md hover:border-blue-200 dark:hover:border-blue-700 transition-all duration-300 group">
+                    <div class="absolute -left-10 md:-left-16 top-6 w-12 h-12 bg-white dark:bg-dark_bg border-4 border-primary dark:border-blue-600 text-primary dark:text-blue-400 rounded-full flex items-center justify-center font-extrabold text-xl shadow-sm z-10 group-hover:scale-110 group-hover:bg-primary dark:group-hover:bg-blue-600 group-hover:text-white transition-all duration-300">3</div>
                     <div>
-                        <h3 class="text-xl font-bold text-slate-800 mb-2 tracking-tight">Анализ безопасности (PSP & MVR)</h3>
-                        <p class="text-sm text-slate-500 mb-5 font-medium">Вносить записи в <b>Traffic Convictions</b> строго <span class="bg-slate-100 px-1 rounded text-slate-800">от старого к новому</span>.</p>
+                        <h3 class="text-xl font-bold text-slate-800 dark:text-white mb-2 tracking-tight">Анализ безопасности (PSP & MVR)</h3>
+                        <p class="text-sm text-slate-500 dark:text-slate-400 mb-5 font-medium">Вносить записи в <b>Traffic Convictions</b> строго <span class="bg-slate-100 dark:bg-slate-800 px-1 rounded text-slate-800 dark:text-slate-200">от старого к новому</span>.</p>
                         
                         <div class="flex flex-col sm:flex-row gap-4 mb-5">
-                            <div class="flex-1 border border-red-200 bg-red-50/50 p-5 rounded-xl shadow-sm relative overflow-hidden">
+                            <div class="flex-1 border border-red-200 dark:border-red-900/50 bg-red-50/50 dark:bg-red-900/10 p-5 rounded-xl shadow-sm relative overflow-hidden">
                                 <div class="absolute top-0 left-0 w-1 h-full bg-danger"></div>
                                 <b class="text-danger flex items-center gap-2 mb-2 text-base"><i class="fas fa-car-crash"></i> DRIVER VIOLATIONS</b>
-                                <span class="inline-block px-2 py-0.5 bg-red-100 text-red-800 text-xs font-bold rounded mb-2">ОБЯЗАТЕЛЬНО ВНОСИМ</span>
-                                <span class="text-sm text-slate-600 block leading-relaxed">Speeding, Lane jumping, Failure to obey traffic device. Влияет на Safety Rating.</span>
+                                <span class="inline-block px-2 py-0.5 bg-red-100 dark:bg-red-900/40 text-red-800 dark:text-red-300 text-xs font-bold rounded mb-2">ОБЯЗАТЕЛЬНО ВНОСИМ</span>
+                                <span class="text-sm text-slate-600 dark:text-slate-300 block leading-relaxed">Speeding, Lane jumping, Failure to obey traffic device. Влияет на Safety Rating.</span>
                             </div>
-                            <div class="flex-1 border border-emerald-200 bg-emerald-50/50 p-5 rounded-xl shadow-sm relative overflow-hidden">
+                            <div class="flex-1 border border-emerald-200 dark:border-emerald-900/50 bg-emerald-50/50 dark:bg-emerald-900/10 p-5 rounded-xl shadow-sm relative overflow-hidden">
                                 <div class="absolute top-0 left-0 w-1 h-full bg-success"></div>
                                 <b class="text-success flex items-center gap-2 mb-2 text-base"><i class="fas fa-wrench"></i> VEHICLE VIOLATIONS</b>
-                                <span class="inline-block px-2 py-0.5 bg-emerald-100 text-emerald-800 text-xs font-bold rounded mb-2">ИГНОРИРУЕМ В АНКЕТЕ</span>
-                                <span class="text-sm text-slate-600 block leading-relaxed">Inoperative headlamp, Tire tread. Технические ошибки не портят личный рекорд.</span>
+                                <span class="inline-block px-2 py-0.5 bg-emerald-100 dark:bg-emerald-900/40 text-emerald-800 dark:text-emerald-300 text-xs font-bold rounded mb-2">ИГНОРИРУЕМ В АНКЕТЕ</span>
+                                <span class="text-sm text-slate-600 dark:text-slate-300 block leading-relaxed">Inoperative headlamp, Tire tread. Технические ошибки не портят личный рекорд.</span>
                             </div>
                         </div>
-                        <div class="bg-gradient-to-r from-accent/10 to-transparent p-4 rounded-xl text-sm border-l-4 border-accent">
-                            <strong class="text-slate-800 flex items-center gap-2 mb-1"><i class="fas fa-lightbulb text-accent"></i> FCP Hack (Если > 4 нарушений):</strong> 
-                            <span class="text-slate-600">Активируйте тумблер <b>ADDITIONAL CONVICTIONS</b> и внесите остальные записи общим списком в появившееся текстовое поле.</span>
+                        <div class="bg-gradient-to-r from-accent/10 dark:from-amber-900/20 to-transparent p-4 rounded-xl text-sm border-l-4 border-accent">
+                            <strong class="text-slate-800 dark:text-white flex items-center gap-2 mb-1"><i class="fas fa-lightbulb text-accent"></i> FCP Hack (Если > 4 нарушений):</strong> 
+                            <span class="text-slate-600 dark:text-slate-300">Активируйте тумблер <b>ADDITIONAL CONVICTIONS</b> и внесите остальные записи общим списком в появившееся текстовое поле.</span>
                         </div>
                     </div>
                 </div>
 
                  <!-- Step 4 -->
-                 <div class="relative bg-white rounded-2xl shadow-sm border border-slate-200/80 p-6 md:p-8 ml-10 md:ml-16 hover:shadow-md hover:border-blue-200 transition-all duration-300 group">
-                    <div class="absolute -left-10 md:-left-16 top-6 w-12 h-12 bg-white border-4 border-primary text-primary rounded-full flex items-center justify-center font-extrabold text-xl shadow-sm z-10 group-hover:scale-110 group-hover:bg-primary group-hover:text-white transition-all duration-300">4</div>
+                 <div class="relative bg-white dark:bg-dark_surface rounded-2xl shadow-sm border border-slate-200/80 dark:border-dark_border p-6 md:p-8 ml-10 md:ml-16 hover:shadow-md hover:border-blue-200 dark:hover:border-blue-700 transition-all duration-300 group">
+                    <div class="absolute -left-10 md:-left-16 top-6 w-12 h-12 bg-white dark:bg-dark_bg border-4 border-primary dark:border-blue-600 text-primary dark:text-blue-400 rounded-full flex items-center justify-center font-extrabold text-xl shadow-sm z-10 group-hover:scale-110 group-hover:bg-primary dark:group-hover:bg-blue-600 group-hover:text-white transition-all duration-300">4</div>
                     <div>
-                        <h3 class="text-xl font-bold text-slate-800 mb-5 tracking-tight">Реконструкция стажа (Work Experience)</h3>
+                        <h3 class="text-xl font-bold text-slate-800 dark:text-white mb-5 tracking-tight">Реконструкция стажа (Work Experience)</h3>
                         <div class="grid sm:grid-cols-2 gap-4">
-                            <div class="bg-slate-50 p-4 rounded-xl border border-slate-100 hover:border-blue-200 transition-colors">
-                                <strong class="text-primary text-sm flex items-center gap-2 mb-2"><i class="fas fa-calendar-alt text-blue-400"></i> Правило 2015 года</strong>
-                                <span class="text-sm text-slate-600 leading-snug block">Независимо от текущей даты, история восстанавливается строго до 2015 года (охватывает 11-летний период на момент 2026 года).</span>
+                            <div class="bg-slate-50 dark:bg-slate-800/50 p-4 rounded-xl border border-slate-100 dark:border-slate-700 hover:border-blue-200 dark:hover:border-blue-600 transition-colors">
+                                <strong class="text-primary dark:text-blue-400 text-sm flex items-center gap-2 mb-2"><i class="fas fa-calendar-alt text-blue-400"></i> Правило 2015 года</strong>
+                                <span class="text-sm text-slate-600 dark:text-slate-300 leading-snug block">Независимо от текущей даты, история восстанавливается строго до 2015 года (охватывает 11-летний период на момент 2026 года).</span>
                             </div>
-                            <div class="bg-slate-50 p-4 rounded-xl border border-slate-100 hover:border-blue-200 transition-colors">
-                                <strong class="text-primary text-sm flex items-center gap-2 mb-2"><i class="fas fa-link text-blue-400"></i> Борьба с Gaps</strong>
-                                <span class="text-sm text-slate-600 leading-snug block">Разрывы >1 месяца недопустимы. Вставляем период <b>Unemployment</b> стык-в-стык. Непрерывная цепочка дат!</span>
+                            <div class="bg-slate-50 dark:bg-slate-800/50 p-4 rounded-xl border border-slate-100 dark:border-slate-700 hover:border-blue-200 dark:hover:border-blue-600 transition-colors">
+                                <strong class="text-primary dark:text-blue-400 text-sm flex items-center gap-2 mb-2"><i class="fas fa-link text-blue-400"></i> Борьба с Gaps</strong>
+                                <span class="text-sm text-slate-600 dark:text-slate-300 leading-snug block">Разрывы >1 месяца недопустимы. Вставляем период <b>Unemployment</b> стык-в-стык. Непрерывная цепочка дат!</span>
                             </div>
-                            <div class="bg-slate-50 p-4 rounded-xl border border-slate-100 hover:border-blue-200 transition-colors">
-                                <strong class="text-primary text-sm flex items-center gap-2 mb-2"><i class="fas fa-search text-blue-400"></i> Детектив по PSP</strong>
-                                <span class="text-sm text-slate-600 leading-snug block">Инспекции из PSP имеют высший приоритет. Обязываем водителя добавить скрытые работы.</span>
+                            <div class="bg-slate-50 dark:bg-slate-800/50 p-4 rounded-xl border border-slate-100 dark:border-slate-700 hover:border-blue-200 dark:hover:border-blue-600 transition-colors">
+                                <strong class="text-primary dark:text-blue-400 text-sm flex items-center gap-2 mb-2"><i class="fas fa-search text-blue-400"></i> Детектив по PSP</strong>
+                                <span class="text-sm text-slate-600 dark:text-slate-300 leading-snug block">Инспекции из PSP имеют высший приоритет. Обязываем водителя добавить скрытые работы.</span>
                             </div>
-                            <div class="bg-slate-50 p-4 rounded-xl border border-slate-100 hover:border-blue-200 transition-colors">
-                                <strong class="text-primary text-sm flex items-center gap-2 mb-2"><i class="fas fa-briefcase text-blue-400"></i> Owner-Op & EIN</strong>
-                                <span class="text-sm text-slate-600 leading-snug block">LLC = Требуем форму <b>SS-4</b> (IRS). Если компании нет, в поле вносится строгая фраза: <i>"I don't have a company"</i>.</span>
+                            <div class="bg-slate-50 dark:bg-slate-800/50 p-4 rounded-xl border border-slate-100 dark:border-slate-700 hover:border-blue-200 dark:hover:border-blue-600 transition-colors">
+                                <strong class="text-primary dark:text-blue-400 text-sm flex items-center gap-2 mb-2"><i class="fas fa-briefcase text-blue-400"></i> Owner-Op & EIN</strong>
+                                <span class="text-sm text-slate-600 dark:text-slate-300 leading-snug block">LLC = Требуем форму <b>SS-4</b> (IRS). Если компании нет, в поле вносится строгая фраза: <i>"I don't have a company"</i>.</span>
                             </div>
                         </div>
                     </div>
                 </div>
 
                 <!-- Step 5 -->
-                <div class="relative bg-white rounded-2xl shadow-sm border border-slate-200/80 p-6 md:p-8 ml-10 md:ml-16 hover:shadow-md hover:border-blue-200 transition-all duration-300 group">
-                    <div class="absolute -left-10 md:-left-16 top-6 w-12 h-12 bg-white border-4 border-primary text-primary rounded-full flex items-center justify-center font-extrabold text-xl shadow-sm z-10 group-hover:scale-110 group-hover:bg-primary group-hover:text-white transition-all duration-300">5</div>
+                <div class="relative bg-white dark:bg-dark_surface rounded-2xl shadow-sm border border-slate-200/80 dark:border-dark_border p-6 md:p-8 ml-10 md:ml-16 hover:shadow-md hover:border-blue-200 dark:hover:border-blue-700 transition-all duration-300 group">
+                    <div class="absolute -left-10 md:-left-16 top-6 w-12 h-12 bg-white dark:bg-dark_bg border-4 border-primary dark:border-blue-600 text-primary dark:text-blue-400 rounded-full flex items-center justify-center font-extrabold text-xl shadow-sm z-10 group-hover:scale-110 group-hover:bg-primary dark:group-hover:bg-blue-600 group-hover:text-white transition-all duration-300">5</div>
                     <div>
-                        <h3 class="text-xl font-bold text-slate-800 mb-5 tracking-tight">Финализация: «Handshake» и Подписи</h3>
+                        <h3 class="text-xl font-bold text-slate-800 dark:text-white mb-5 tracking-tight">Финализация: «Handshake» и Подписи</h3>
                         
                         <div class="flex flex-col md:flex-row gap-6">
-                            <div class="flex-1 bg-slate-50/50 p-5 rounded-xl border border-slate-200 shadow-inner">
-                                <h4 class="font-bold text-slate-800 mb-4 text-xs tracking-widest flex items-center gap-2 uppercase"><i class="fas fa-sync-alt text-slate-400"></i> Цикл "Need Changes"</h4>
-                                <ol class="relative border-l border-slate-300 ml-3 space-y-5">
+                            <div class="flex-1 bg-slate-50/50 dark:bg-slate-800/30 p-5 rounded-xl border border-slate-200 dark:border-slate-700 shadow-inner">
+                                <h4 class="font-bold text-slate-800 dark:text-white mb-4 text-xs tracking-widest flex items-center gap-2 uppercase"><i class="fas fa-sync-alt text-slate-400"></i> Цикл "Need Changes"</h4>
+                                <ol class="relative border-l border-slate-300 dark:border-slate-600 ml-3 space-y-5">
                                     <li class="pl-6 relative">
-                                        <span class="absolute w-3.5 h-3.5 bg-yellow-400 rounded-full -left-[7.5px] top-0.5 ring-4 ring-slate-50"></span>
-                                        <p class="text-sm text-slate-600">Нажимаем <span class="bg-yellow-200 text-yellow-800 px-2 py-0.5 rounded-md font-bold text-xs shadow-sm">Need Changes</span> в FCP.</p>
+                                        <span class="absolute w-3.5 h-3.5 bg-yellow-400 rounded-full -left-[7.5px] top-0.5 ring-4 ring-slate-50 dark:ring-slate-800"></span>
+                                        <p class="text-sm text-slate-600 dark:text-slate-300">Нажимаем <span class="bg-yellow-200 dark:bg-yellow-900/50 text-yellow-800 dark:text-yellow-300 px-2 py-0.5 rounded-md font-bold text-xs shadow-sm">Need Changes</span> в FCP.</p>
                                     </li>
                                     <li class="pl-6 relative">
-                                        <span class="absolute w-3.5 h-3.5 bg-blue-400 rounded-full -left-[7.5px] top-0.5 ring-4 ring-slate-50"></span>
-                                        <p class="text-sm text-slate-600">Водитель входит и жмет <b>Approve / Submit</b> <br><span class="text-xs text-slate-400">(без этого кнопка генерации PDF не появится!)</span>.</p>
+                                        <span class="absolute w-3.5 h-3.5 bg-blue-400 rounded-full -left-[7.5px] top-0.5 ring-4 ring-slate-50 dark:ring-slate-800"></span>
+                                        <p class="text-sm text-slate-600 dark:text-slate-300">Водитель входит и жмет <b>Approve / Submit</b> <br><span class="text-xs text-slate-400 dark:text-slate-500">(без этого кнопка генерации PDF не появится!)</span>.</p>
                                     </li>
                                     <li class="pl-6 relative">
-                                        <span class="absolute w-3.5 h-3.5 bg-green-500 rounded-full -left-[7.5px] top-0.5 ring-4 ring-slate-50"></span>
-                                        <p class="text-sm text-slate-600">Вы нажимаете <span class="bg-green-200 text-green-800 px-2 py-0.5 rounded-md font-bold text-xs shadow-sm">Approve</span> для финала.</p>
+                                        <span class="absolute w-3.5 h-3.5 bg-green-500 rounded-full -left-[7.5px] top-0.5 ring-4 ring-slate-50 dark:ring-slate-800"></span>
+                                        <p class="text-sm text-slate-600 dark:text-slate-300">Вы нажимаете <span class="bg-green-200 dark:bg-green-900/50 text-green-800 dark:text-green-300 px-2 py-0.5 rounded-md font-bold text-xs shadow-sm">Approve</span> для финала.</p>
                                     </li>
                                 </ol>
                             </div>
                             
-                            <div class="flex-1 bg-slate-50/50 p-5 rounded-xl border border-slate-200 shadow-inner flex flex-col justify-center">
-                                <h4 class="font-bold text-slate-800 mb-4 text-xs tracking-widest flex items-center gap-2 uppercase"><i class="fas fa-file-signature text-slate-400"></i> Подписание документов</h4>
-                                <ul class="text-sm text-slate-600 space-y-4">
-                                    <li class="flex items-start gap-3 bg-white p-3 rounded-lg border border-slate-100 shadow-sm">
-                                        <i class="fas fa-pen-nib text-primary mt-0.5"></i>
-                                        <div><b class="text-slate-800">Initials (Инициалы):</b> В углу КАЖДОЙ страницы (обычно 8 шт). Это доказательство, что водитель прочитал всё, и <b>защитит компанию в суде</b> от заявлений "я этого не видел".</div>
+                            <div class="flex-1 bg-slate-50/50 dark:bg-slate-800/30 p-5 rounded-xl border border-slate-200 dark:border-slate-700 shadow-inner flex flex-col justify-center">
+                                <h4 class="font-bold text-slate-800 dark:text-white mb-4 text-xs tracking-widest flex items-center gap-2 uppercase"><i class="fas fa-file-signature text-slate-400"></i> Подписание документов</h4>
+                                <ul class="text-sm text-slate-600 dark:text-slate-300 space-y-4">
+                                    <li class="flex items-start gap-3 bg-white dark:bg-slate-800 p-3 rounded-lg border border-slate-100 dark:border-slate-700 shadow-sm">
+                                        <i class="fas fa-pen-nib text-primary dark:text-blue-400 mt-0.5"></i>
+                                        <div><b class="text-slate-800 dark:text-white">Initials (Инициалы):</b> В углу КАЖДОЙ страницы (обычно 8 шт). Это доказательство, что водитель прочитал всё, и <b>защитит компанию в суде</b> от заявлений "я этого не видел".</div>
                                     </li>
-                                    <li class="flex items-start gap-3 bg-white p-3 rounded-lg border border-slate-100 shadow-sm">
-                                        <i class="fas fa-signature text-primary mt-0.5"></i>
-                                        <div><b class="text-slate-800">Signatures:</b> Подпись и дата в конце.</div>
+                                    <li class="flex items-start gap-3 bg-white dark:bg-slate-800 p-3 rounded-lg border border-slate-100 dark:border-slate-700 shadow-sm">
+                                        <i class="fas fa-signature text-primary dark:text-blue-400 mt-0.5"></i>
+                                        <div><b class="text-slate-800 dark:text-white">Signatures:</b> Подпись и дата в конце.</div>
                                     </li>
-                                    <li class="flex items-start gap-3 bg-white p-3 rounded-lg border border-slate-100 shadow-sm">
-                                        <i class="fas fa-shield-alt text-primary mt-0.5"></i>
-                                        <div><b class="text-slate-800">Safety Policy:</b> Отправить ПОСЛЕ анкеты отдельным файлом. Дождаться статуса <span class="text-orange-500 font-bold bg-orange-50 border border-orange-100 px-1.5 py-0.5 rounded text-xs ml-1">SIGNED</span>.</div>
+                                    <li class="flex items-start gap-3 bg-white dark:bg-slate-800 p-3 rounded-lg border border-slate-100 dark:border-slate-700 shadow-sm">
+                                        <i class="fas fa-shield-alt text-primary dark:text-blue-400 mt-0.5"></i>
+                                        <div><b class="text-slate-800 dark:text-white">Safety Policy:</b> Отправить ПОСЛЕ анкеты отдельным файлом. Дождаться статуса <span class="text-orange-500 font-bold bg-orange-50 dark:bg-orange-900/20 border border-orange-100 dark:border-orange-800/50 px-1.5 py-0.5 rounded text-xs ml-1">SIGNED</span>.</div>
                                     </li>
                                 </ul>
                             </div>
@@ -435,11 +457,11 @@
             </div>
 
             <!-- Pagination Controls -->
-            <div class="pagination-controls mt-8 flex justify-between border-t border-slate-200/60 pt-6">
-                <button onclick="switchTab('intro')" class="flex items-center gap-2 bg-white border border-slate-200 hover:border-slate-400 hover:text-slate-800 px-5 py-2.5 rounded-xl font-semibold text-slate-500 transition-all shadow-sm group">
+            <div class="pagination-controls mt-8 flex justify-between border-t border-slate-200/60 dark:border-dark_border pt-6">
+                <button onclick="switchTab('intro')" class="flex items-center gap-2 bg-white dark:bg-dark_surface border border-slate-200 dark:border-dark_border hover:border-slate-400 dark:hover:border-slate-500 hover:text-slate-800 dark:hover:text-white px-5 py-2.5 rounded-xl font-semibold text-slate-500 dark:text-slate-400 transition-all shadow-sm group">
                     <i class="fas fa-arrow-left group-hover:-translate-x-1 transition-transform"></i> Назад
                 </button>
-                <button onclick="switchTab('rules')" class="flex items-center gap-2 bg-white border border-slate-200 hover:border-primary hover:text-primary px-5 py-2.5 rounded-xl font-semibold text-slate-600 transition-all shadow-sm group">
+                <button onclick="switchTab('rules')" class="flex items-center gap-2 bg-white dark:bg-dark_surface border border-slate-200 dark:border-dark_border hover:border-primary dark:hover:border-blue-500 hover:text-primary dark:hover:text-blue-400 px-5 py-2.5 rounded-xl font-semibold text-slate-600 dark:text-slate-300 transition-all shadow-sm group">
                     Далее: Правила FMCSA <i class="fas fa-arrow-right group-hover:translate-x-1 transition-transform"></i>
                 </button>
             </div>
@@ -447,45 +469,45 @@
 
         <!-- SECTION: Rules -->
         <div id="rules" class="section-content max-w-5xl mx-auto pb-12 print-break-before">
-            <h2 class="text-3xl font-extrabold text-slate-800 mb-8 flex items-center gap-3 tracking-tight">
-                <span class="bg-danger/10 text-danger w-12 h-12 flex items-center justify-center rounded-xl"><i class="fas fa-exclamation-triangle"></i></span> Правила FMCSA
+            <h2 class="text-3xl font-extrabold text-slate-800 dark:text-white mb-8 flex items-center gap-3 tracking-tight">
+                <span class="bg-danger/10 dark:bg-red-900/30 text-danger w-12 h-12 flex items-center justify-center rounded-xl"><i class="fas fa-exclamation-triangle"></i></span> Правила FMCSA
             </h2>
             
             <div class="grid md:grid-cols-2 gap-6 mb-8">
                 <!-- 7 Day Rule -->
-                <div class="bg-gradient-to-br from-red-50 to-white rounded-3xl p-6 md:p-8 border border-red-100 shadow-sm relative overflow-hidden transition-all duration-300 hover:shadow-lg hover:-translate-y-1">
-                    <div class="absolute -right-6 -top-6 p-4 opacity-[0.03] transform rotate-12 transition-transform duration-700 hover:rotate-0 hover:scale-110 pointer-events-none"><i class="fas fa-bed text-[180px] text-danger"></i></div>
+                <div class="bg-gradient-to-br from-red-50 dark:from-red-900/20 to-white dark:to-slate-800/80 rounded-3xl p-6 md:p-8 border border-red-100 dark:border-red-900/30 shadow-sm relative overflow-hidden transition-all duration-300 hover:shadow-lg hover:-translate-y-1">
+                    <div class="absolute -right-6 -top-6 p-4 opacity-[0.03] dark:opacity-5 transform rotate-12 transition-transform duration-700 hover:rotate-0 hover:scale-110 pointer-events-none"><i class="fas fa-bed text-[180px] text-danger"></i></div>
                     
-                    <h3 class="text-xl font-extrabold text-danger mb-3 flex items-center gap-2 relative z-10"><i class="fas fa-clock"></i> 7-Day Rest Rule</h3>
-                    <p class="text-sm text-red-900/80 mb-6 relative z-10 font-medium">Критическое требование по борьбе с усталостью. По закону нужна неделя отдыха. <b>Мы не нанимаем «дорожных убийц», которые прыгают из трака в трак без отдыха!</b></p>
+                    <h3 class="text-xl font-extrabold text-danger dark:text-red-400 mb-3 flex items-center gap-2 relative z-10"><i class="fas fa-clock"></i> 7-Day Rest Rule</h3>
+                    <p class="text-sm text-red-900/80 dark:text-red-200/80 mb-6 relative z-10 font-medium">Критическое требование по борьбе с усталостью. По закону нужна неделя отдыха. <b>Мы не нанимаем «дорожных убийц», которые прыгают из трака в трак без отдыха!</b></p>
                     
                     <div class="space-y-3 relative z-10">
-                        <div class="bg-white p-4 rounded-xl border border-red-50 shadow-sm flex justify-between items-center group">
+                        <div class="bg-white dark:bg-slate-800 p-4 rounded-xl border border-red-50 dark:border-slate-700 shadow-sm flex justify-between items-center group">
                             <div>
-                                <span class="block text-[10px] text-slate-400 font-bold uppercase tracking-widest mb-1">Поле: Last Date on Duty</span>
-                                <span class="text-lg font-bold text-slate-800">Дата анкеты <span class="text-danger bg-red-50 px-1 rounded ml-1">– 7 дней</span></span>
+                                <span class="block text-[10px] text-slate-400 dark:text-slate-500 font-bold uppercase tracking-widest mb-1">Поле: Last Date on Duty</span>
+                                <span class="text-lg font-bold text-slate-800 dark:text-white">Дата анкеты <span class="text-danger dark:text-red-400 bg-red-50 dark:bg-red-900/30 px-1 rounded ml-1">– 7 дней</span></span>
                             </div>
-                            <div class="w-10 h-10 rounded-full bg-red-50 flex items-center justify-center text-red-300 group-hover:bg-danger group-hover:text-white transition-colors duration-300"><i class="fas fa-calendar-minus"></i></div>
+                            <div class="w-10 h-10 rounded-full bg-red-50 dark:bg-red-900/30 flex items-center justify-center text-red-300 dark:text-red-500 group-hover:bg-danger group-hover:text-white transition-colors duration-300"><i class="fas fa-calendar-minus"></i></div>
                         </div>
-                        <div class="bg-white p-4 rounded-xl border border-red-50 shadow-sm flex justify-between items-center group">
+                        <div class="bg-white dark:bg-slate-800 p-4 rounded-xl border border-red-50 dark:border-slate-700 shadow-sm flex justify-between items-center group">
                             <div>
-                                <span class="block text-[10px] text-slate-400 font-bold uppercase tracking-widest mb-1">Hours Worked (за 7 дней)</span>
-                                <span class="text-lg font-extrabold text-slate-800 tracking-wider">0 0 0 0 0 0 0</span>
+                                <span class="block text-[10px] text-slate-400 dark:text-slate-500 font-bold uppercase tracking-widest mb-1">Hours Worked (за 7 дней)</span>
+                                <span class="text-lg font-extrabold text-slate-800 dark:text-white tracking-wider">0 0 0 0 0 0 0</span>
                             </div>
-                            <div class="w-10 h-10 rounded-full bg-red-50 flex items-center justify-center text-red-300 group-hover:bg-danger group-hover:text-white transition-colors duration-300"><i class="fas fa-stopwatch-20"></i></div>
+                            <div class="w-10 h-10 rounded-full bg-red-50 dark:bg-red-900/30 flex items-center justify-center text-red-300 dark:text-red-500 group-hover:bg-danger group-hover:text-white transition-colors duration-300"><i class="fas fa-stopwatch-20"></i></div>
                         </div>
                     </div>
                 </div>
 
                 <!-- Previous License -->
-                <div class="bg-gradient-to-br from-primary to-blue-900 rounded-3xl p-6 md:p-8 text-white shadow-lg relative overflow-hidden transition-all duration-300 hover:shadow-xl hover:-translate-y-1">
+                <div class="bg-gradient-to-br from-primary to-blue-900 dark:from-blue-900 dark:to-slate-900 rounded-3xl p-6 md:p-8 text-white shadow-lg relative overflow-hidden transition-all duration-300 hover:shadow-xl hover:-translate-y-1">
                     <div class="absolute -right-6 -bottom-6 p-4 opacity-5 transform -rotate-12 transition-transform duration-700 hover:rotate-0 hover:scale-110 pointer-events-none"><i class="fas fa-id-card text-[180px]"></i></div>
                     
                     <h3 class="text-xl font-extrabold mb-3 flex items-center gap-2 relative z-10 text-white drop-shadow-md"><i class="fas fa-history"></i> Previous License & MVR</h3>
                     <p class="text-sm text-blue-200 mb-6 relative z-10">Проверка наличия прав в других штатах (вскрывается в PSP/MVR) и валидности сертификатов.</p>
                     
-                    <div class="bg-white/10 p-5 rounded-2xl border border-white/10 backdrop-blur-md relative z-10 space-y-4">
-                        <div class="flex items-start gap-3 bg-black/10 p-3 rounded-xl border border-white/5">
+                    <div class="bg-white/10 dark:bg-black/20 p-5 rounded-2xl border border-white/10 backdrop-blur-md relative z-10 space-y-4">
+                        <div class="flex items-start gap-3 bg-black/10 dark:bg-white/5 p-3 rounded-xl border border-white/5">
                             <i class="fas fa-toggle-on text-accent mt-0.5 text-lg"></i>
                             <p class="text-sm leading-tight text-blue-50">Нашли другой штат? -> Тумблер <b>PREVIOUS LICENSE</b> переводим в <b>YES</b>.</p>
                         </div>
@@ -501,28 +523,28 @@
                 </div>
             </div>
             
-            <div class="bg-white p-6 md:p-8 rounded-3xl border border-slate-200 shadow-sm">
-                <h3 class="font-bold text-xl text-slate-800 mb-6 flex items-center gap-3">
-                    <span class="bg-slate-100 text-slate-500 w-8 h-8 flex items-center justify-center rounded-lg text-sm"><i class="fas fa-layer-group"></i></span>
+            <div class="bg-white dark:bg-dark_surface p-6 md:p-8 rounded-3xl border border-slate-200 dark:border-dark_border shadow-sm">
+                <h3 class="font-bold text-xl text-slate-800 dark:text-white mb-6 flex items-center gap-3">
+                    <span class="bg-slate-100 dark:bg-slate-800 text-slate-500 dark:text-slate-400 w-8 h-8 flex items-center justify-center rounded-lg text-sm"><i class="fas fa-layer-group"></i></span>
                     Матрица разграничения документов
                 </h3>
-                <div class="overflow-x-auto rounded-xl border border-slate-100">
-                    <table class="w-full text-left text-sm text-slate-600 border-collapse">
+                <div class="overflow-x-auto rounded-xl border border-slate-100 dark:border-slate-700">
+                    <table class="w-full text-left text-sm text-slate-600 dark:text-slate-300 border-collapse">
                         <tbody>
-                            <tr class="border-b border-slate-100 hover:bg-slate-50/80 transition-colors group">
-                                <td class="py-4 pl-5 font-bold text-primary w-1/3 border-r border-slate-50 group-hover:bg-blue-50/50 transition-colors">Application vs. Safety Policy</td>
-                                <td class="py-4 px-5">Сначала одобряется анкета (<span class="bg-green-100 text-green-700 px-1.5 py-0.5 rounded text-xs font-bold">Approve</span>), только после — Политика.</td>
+                            <tr class="border-b border-slate-100 dark:border-slate-700 hover:bg-slate-50/80 dark:hover:bg-slate-800 transition-colors group">
+                                <td class="py-4 pl-5 font-bold text-primary dark:text-blue-400 w-1/3 border-r border-slate-50 dark:border-slate-800 group-hover:bg-blue-50/50 dark:group-hover:bg-blue-900/20 transition-colors">Application vs. Safety Policy</td>
+                                <td class="py-4 px-5">Сначала одобряется анкета (<span class="bg-green-100 dark:bg-green-900/30 text-green-700 dark:text-green-400 px-1.5 py-0.5 rounded text-xs font-bold">Approve</span>), только после — Политика.</td>
                             </tr>
-                            <tr class="border-b border-slate-100 hover:bg-slate-50/80 transition-colors group">
-                                <td class="py-4 pl-5 font-bold text-primary border-r border-slate-50 group-hover:bg-blue-50/50 transition-colors">PSP Record vs. MVR</td>
-                                <td class="py-4 px-5"><b class="text-slate-800">PSP — приоритет.</b> MVR общая справка за 3 года, а PSP — доказательство за 5 лет. Данные PSP признаются верными.</td>
+                            <tr class="border-b border-slate-100 dark:border-slate-700 hover:bg-slate-50/80 dark:hover:bg-slate-800 transition-colors group">
+                                <td class="py-4 pl-5 font-bold text-primary dark:text-blue-400 border-r border-slate-50 dark:border-slate-800 group-hover:bg-blue-50/50 dark:group-hover:bg-blue-900/20 transition-colors">PSP Record vs. MVR</td>
+                                <td class="py-4 px-5"><b class="text-slate-800 dark:text-white">PSP — приоритет.</b> MVR общая справка за 3 года, а PSP — доказательство за 5 лет. Данные PSP признаются верными.</td>
                             </tr>
-                            <tr class="border-b border-slate-100 hover:bg-slate-50/80 transition-colors group">
-                                <td class="py-4 pl-5 font-bold text-primary border-r border-slate-50 group-hover:bg-blue-50/50 transition-colors">Owner-Operator vs. Company Driver</td>
+                            <tr class="border-b border-slate-100 dark:border-slate-700 hover:bg-slate-50/80 dark:hover:bg-slate-800 transition-colors group">
+                                <td class="py-4 pl-5 font-bold text-primary dark:text-blue-400 border-r border-slate-50 dark:border-slate-800 group-hover:bg-blue-50/50 dark:group-hover:bg-blue-900/20 transition-colors">Owner-Operator vs. Company Driver</td>
                                 <td class="py-4 px-5">Оунер обязан дать EIN (IRS SS-4). Наемный (Company/W2) — только SSN.</td>
                             </tr>
-                            <tr class="hover:bg-slate-50/80 transition-colors group">
-                                <td class="py-4 pl-5 font-bold text-primary border-r border-slate-50 group-hover:bg-blue-50/50 transition-colors">Формы W9 vs. I9</td>
+                            <tr class="hover:bg-slate-50/80 dark:hover:bg-slate-800 transition-colors group">
+                                <td class="py-4 pl-5 font-bold text-primary dark:text-blue-400 border-r border-slate-50 dark:border-slate-800 group-hover:bg-blue-50/50 dark:group-hover:bg-blue-900/20 transition-colors">Формы W9 vs. I9</td>
                                 <td class="py-4 px-5">W9 — налоговая идентификация бизнеса. I9 — проверка права на работу в США.</td>
                             </tr>
                         </tbody>
@@ -531,11 +553,11 @@
             </div>
 
             <!-- Pagination Controls -->
-            <div class="pagination-controls mt-8 flex justify-between border-t border-slate-200/60 pt-6">
-                <button onclick="switchTab('workflow')" class="flex items-center gap-2 bg-white border border-slate-200 hover:border-slate-400 hover:text-slate-800 px-5 py-2.5 rounded-xl font-semibold text-slate-500 transition-all shadow-sm group">
+            <div class="pagination-controls mt-8 flex justify-between border-t border-slate-200/60 dark:border-dark_border pt-6">
+                <button onclick="switchTab('workflow')" class="flex items-center gap-2 bg-white dark:bg-dark_surface border border-slate-200 dark:border-dark_border hover:border-slate-400 dark:hover:border-slate-500 hover:text-slate-800 dark:hover:text-white px-5 py-2.5 rounded-xl font-semibold text-slate-500 dark:text-slate-400 transition-all shadow-sm group">
                     <i class="fas fa-arrow-left group-hover:-translate-x-1 transition-transform"></i> Назад
                 </button>
-                <button onclick="switchTab('scripts')" class="flex items-center gap-2 bg-white border border-slate-200 hover:border-primary hover:text-primary px-5 py-2.5 rounded-xl font-semibold text-slate-600 transition-all shadow-sm group">
+                <button onclick="switchTab('scripts')" class="flex items-center gap-2 bg-white dark:bg-dark_surface border border-slate-200 dark:border-dark_border hover:border-primary dark:hover:border-blue-500 hover:text-primary dark:hover:text-blue-400 px-5 py-2.5 rounded-xl font-semibold text-slate-600 dark:text-slate-300 transition-all shadow-sm group">
                     Далее: Скрипты <i class="fas fa-arrow-right group-hover:translate-x-1 transition-transform"></i>
                 </button>
             </div>
@@ -544,43 +566,43 @@
         <!-- SECTION: Scripts -->
         <div id="scripts" class="section-content max-w-5xl mx-auto pb-12 print-break-before">
             <div class="flex flex-col sm:flex-row sm:items-center justify-between gap-4 mb-8">
-                <h2 class="text-3xl font-extrabold text-slate-800 flex items-center gap-3 tracking-tight">
-                    <span class="bg-secondary/10 text-secondary w-12 h-12 flex items-center justify-center rounded-xl"><i class="fas fa-comment-dots"></i></span> Скрипты и Шаблоны
+                <h2 class="text-3xl font-extrabold text-slate-800 dark:text-white flex items-center gap-3 tracking-tight">
+                    <span class="bg-secondary/10 dark:bg-blue-500/20 text-secondary dark:text-blue-400 w-12 h-12 flex items-center justify-center rounded-xl"><i class="fas fa-comment-dots"></i></span> Скрипты и Шаблоны
                 </h2>
                 
                 <!-- Language Toggle -->
-                <div class="flex items-center gap-1 bg-slate-200/60 p-1 rounded-xl border border-slate-200 shadow-inner w-max">
-                    <button onclick="toggleScriptLanguage('en')" id="btn-lang-en" class="px-4 py-1.5 rounded-lg text-sm font-bold bg-white text-primary shadow-sm transition-all focus:outline-none">English</button>
-                    <button onclick="toggleScriptLanguage('ru')" id="btn-lang-ru" class="px-4 py-1.5 rounded-lg text-sm font-bold text-slate-500 hover:text-slate-700 transition-all focus:outline-none">Русский</button>
+                <div class="flex items-center gap-1 bg-slate-200/60 dark:bg-slate-800 p-1 rounded-xl border border-slate-200 dark:border-slate-700 shadow-inner w-max">
+                    <button onclick="toggleScriptLanguage('en')" id="btn-lang-en" class="px-4 py-1.5 rounded-lg text-sm font-bold bg-white dark:bg-slate-600 text-primary dark:text-white shadow-sm transition-all focus:outline-none">English</button>
+                    <button onclick="toggleScriptLanguage('ru')" id="btn-lang-ru" class="px-4 py-1.5 rounded-lg text-sm font-bold text-slate-500 dark:text-slate-400 hover:text-slate-700 dark:hover:text-slate-200 transition-all focus:outline-none">Русский</button>
                 </div>
             </div>
             
             <div class="grid md:grid-cols-2 gap-5 mb-8">
                 <!-- Script 1 -->
-                <div class="bg-white rounded-2xl border border-slate-200 overflow-hidden shadow-sm relative group hover:shadow-md hover:border-blue-300 transition-all duration-300 flex flex-col">
-                    <div class="bg-slate-50/80 px-5 py-3.5 border-b border-slate-100 flex justify-between items-center">
-                        <span class="font-bold text-xs text-primary uppercase tracking-wider flex items-center gap-2"><i class="fas fa-phone-alt opacity-70"></i> 1. Первый контакт</span>
-                        <button onclick="copyToClipboard('script1', this)" class="copy-btn text-primary bg-white border border-blue-100 hover:bg-blue-50 hover:border-blue-200 px-3 py-1.5 rounded-lg text-xs font-bold relative transition-all duration-200 focus:outline-none focus:ring-2 focus:ring-blue-300 active:scale-95 flex items-center gap-1.5 shadow-sm" aria-label="Copy first contact script">
+                <div class="bg-white dark:bg-dark_surface rounded-2xl border border-slate-200 dark:border-dark_border overflow-hidden shadow-sm relative group hover:shadow-md hover:border-blue-300 dark:hover:border-blue-600 transition-all duration-300 flex flex-col">
+                    <div class="bg-slate-50/80 dark:bg-slate-800/50 px-5 py-3.5 border-b border-slate-100 dark:border-slate-700 flex justify-between items-center">
+                        <span class="font-bold text-xs text-primary dark:text-blue-400 uppercase tracking-wider flex items-center gap-2"><i class="fas fa-phone-alt opacity-70"></i> 1. Первый контакт</span>
+                        <button onclick="copyToClipboard('script1', this)" class="copy-btn text-primary dark:text-blue-300 bg-white dark:bg-slate-700 border border-blue-100 dark:border-slate-600 hover:bg-blue-50 dark:hover:bg-slate-600 px-3 py-1.5 rounded-lg text-xs font-bold relative transition-all duration-200 focus:outline-none focus:ring-2 focus:ring-blue-300 active:scale-95 flex items-center gap-1.5 shadow-sm" aria-label="Copy first contact script">
                             <i class="far fa-copy btn-icon"></i> <span class="btn-text">Copy</span>
                             <span class="copy-feedback shadow-lg">Copied!</span>
                         </button>
                     </div>
-                    <div class="p-5 text-slate-600 font-mono text-sm leading-relaxed bg-white selection:bg-blue-100 flex-1" id="script1">
+                    <div class="p-5 text-slate-600 dark:text-slate-300 font-mono text-sm leading-relaxed bg-white dark:bg-dark_surface selection:bg-blue-100 dark:selection:bg-blue-900/50 flex-1" id="script1">
                         <span class="script-en">Hello, my name is Evgenii. I am calling from the AIST Safety Consulting Safety Department. I'm going to send you the link with the application on your email. Could you please fill it out as soon as you can? It's a mandatory step for FMCSA compliance.</span>
                         <span class="script-ru hidden">Здравствуйте, меня зовут Евгений. Я звоню из отдела безопасности AIST Safety Consulting. Сейчас я отправлю вам ссылку на анкету на вашу электронную почту. Пожалуйста, заполните ее как можно скорее. Это обязательное требование FMCSA для выхода в рейс.</span>
                     </div>
                 </div>
 
                 <!-- Script 2 -->
-                <div class="bg-white rounded-2xl border border-slate-200 overflow-hidden shadow-sm relative group hover:shadow-md hover:border-blue-300 transition-all duration-300 flex flex-col">
-                    <div class="bg-slate-50/80 px-5 py-3.5 border-b border-slate-100 flex justify-between items-center">
-                        <span class="font-bold text-xs text-primary uppercase tracking-wider flex items-center gap-2"><i class="fas fa-sms opacity-70"></i> 2. Запрос опыта (Нет резюме)</span>
-                        <button onclick="copyToClipboard('script2', this)" class="copy-btn text-primary bg-white border border-blue-100 hover:bg-blue-50 hover:border-blue-200 px-3 py-1.5 rounded-lg text-xs font-bold relative transition-all duration-200 focus:outline-none focus:ring-2 focus:ring-blue-300 active:scale-95 flex items-center gap-1.5 shadow-sm" aria-label="Copy experience request script">
+                <div class="bg-white dark:bg-dark_surface rounded-2xl border border-slate-200 dark:border-dark_border overflow-hidden shadow-sm relative group hover:shadow-md hover:border-blue-300 dark:hover:border-blue-600 transition-all duration-300 flex flex-col">
+                    <div class="bg-slate-50/80 dark:bg-slate-800/50 px-5 py-3.5 border-b border-slate-100 dark:border-slate-700 flex justify-between items-center">
+                        <span class="font-bold text-xs text-primary dark:text-blue-400 uppercase tracking-wider flex items-center gap-2"><i class="fas fa-sms opacity-70"></i> 2. Запрос опыта (Нет резюме)</span>
+                        <button onclick="copyToClipboard('script2', this)" class="copy-btn text-primary dark:text-blue-300 bg-white dark:bg-slate-700 border border-blue-100 dark:border-slate-600 hover:bg-blue-50 dark:hover:bg-slate-600 px-3 py-1.5 rounded-lg text-xs font-bold relative transition-all duration-200 focus:outline-none focus:ring-2 focus:ring-blue-300 active:scale-95 flex items-center gap-1.5 shadow-sm" aria-label="Copy experience request script">
                             <i class="far fa-copy btn-icon"></i> <span class="btn-text">Copy</span>
                             <span class="copy-feedback shadow-lg">Copied!</span>
                         </button>
                     </div>
-                    <div class="p-5 text-slate-600 font-mono text-sm leading-relaxed bg-white selection:bg-blue-100 whitespace-pre-wrap flex-1" id="script2"><span class="script-en">Please provide the following info for each job since 2015:
+                    <div class="p-5 text-slate-600 dark:text-slate-300 font-mono text-sm leading-relaxed bg-white dark:bg-dark_surface selection:bg-blue-100 dark:selection:bg-blue-900/50 whitespace-pre-wrap flex-1" id="script2"><span class="script-en">Please provide the following info for each job since 2015:
 - Name of the company
 - Start Date (Month/Year)
 - End Date (Month/Year)
@@ -594,167 +616,132 @@
                 </div>
 
                 <!-- Script 3 -->
-                <div class="bg-white rounded-2xl border border-slate-200 overflow-hidden shadow-sm relative group hover:shadow-md hover:border-blue-300 transition-all duration-300 flex flex-col">
-                    <div class="bg-slate-50/80 px-5 py-3.5 border-b border-slate-100 flex justify-between items-center">
-                        <span class="font-bold text-xs text-primary uppercase tracking-wider flex items-center gap-2"><i class="fas fa-sms opacity-70"></i> 3. Need Changes / Approve</span>
-                        <button onclick="copyToClipboard('script3', this)" class="copy-btn text-primary bg-white border border-blue-100 hover:bg-blue-50 hover:border-blue-200 px-3 py-1.5 rounded-lg text-xs font-bold relative transition-all duration-200 focus:outline-none focus:ring-2 focus:ring-blue-300 active:scale-95 flex items-center gap-1.5 shadow-sm" aria-label="Copy need changes script">
+                <div class="bg-white dark:bg-dark_surface rounded-2xl border border-slate-200 dark:border-dark_border overflow-hidden shadow-sm relative group hover:shadow-md hover:border-blue-300 dark:hover:border-blue-600 transition-all duration-300 flex flex-col">
+                    <div class="bg-slate-50/80 dark:bg-slate-800/50 px-5 py-3.5 border-b border-slate-100 dark:border-slate-700 flex justify-between items-center">
+                        <span class="font-bold text-xs text-primary dark:text-blue-400 uppercase tracking-wider flex items-center gap-2"><i class="fas fa-sms opacity-70"></i> 3. Need Changes / Approve</span>
+                        <button onclick="copyToClipboard('script3', this)" class="copy-btn text-primary dark:text-blue-300 bg-white dark:bg-slate-700 border border-blue-100 dark:border-slate-600 hover:bg-blue-50 dark:hover:bg-slate-600 px-3 py-1.5 rounded-lg text-xs font-bold relative transition-all duration-200 focus:outline-none focus:ring-2 focus:ring-blue-300 active:scale-95 flex items-center gap-1.5 shadow-sm" aria-label="Copy need changes script">
                             <i class="far fa-copy btn-icon"></i> <span class="btn-text">Copy</span>
                             <span class="copy-feedback shadow-lg">Copied!</span>
                         </button>
                     </div>
-                    <div class="p-5 text-slate-600 font-mono text-sm leading-relaxed bg-white selection:bg-blue-100 flex-1" id="script3">
+                    <div class="p-5 text-slate-600 dark:text-slate-300 font-mono text-sm leading-relaxed bg-white dark:bg-dark_surface selection:bg-blue-100 dark:selection:bg-blue-900/50 flex-1" id="script3">
                         <span class="script-en">Click on the link, login, go to 'Open Form', scroll down and click 'Approve Changes' then 'Submit for Review'.</span>
                         <span class="script-ru hidden">Перейдите по ссылке, войдите в систему, нажмите 'Open Form', прокрутите в самый низ и нажмите 'Approve Changes', а затем кнопку 'Submit for Review'.</span>
                     </div>
                 </div>
 
                 <!-- Script 4 -->
-                <div class="bg-white rounded-2xl border border-slate-200 overflow-hidden shadow-sm relative group hover:shadow-md hover:border-blue-300 transition-all duration-300 flex flex-col">
-                    <div class="bg-slate-50/80 px-5 py-3.5 border-b border-slate-100 flex justify-between items-center">
-                        <span class="font-bold text-xs text-primary uppercase tracking-wider flex items-center gap-2"><i class="fas fa-sms opacity-70"></i> 4. Адрес в DMV</span>
-                        <button onclick="copyToClipboard('script4', this)" class="copy-btn text-primary bg-white border border-blue-100 hover:bg-blue-50 hover:border-blue-200 px-3 py-1.5 rounded-lg text-xs font-bold relative transition-all duration-200 focus:outline-none focus:ring-2 focus:ring-blue-300 active:scale-95 flex items-center gap-1.5 shadow-sm" aria-label="Copy DMV address script">
+                <div class="bg-white dark:bg-dark_surface rounded-2xl border border-slate-200 dark:border-dark_border overflow-hidden shadow-sm relative group hover:shadow-md hover:border-blue-300 dark:hover:border-blue-600 transition-all duration-300 flex flex-col">
+                    <div class="bg-slate-50/80 dark:bg-slate-800/50 px-5 py-3.5 border-b border-slate-100 dark:border-slate-700 flex justify-between items-center">
+                        <span class="font-bold text-xs text-primary dark:text-blue-400 uppercase tracking-wider flex items-center gap-2"><i class="fas fa-sms opacity-70"></i> 4. Адрес в DMV</span>
+                        <button onclick="copyToClipboard('script4', this)" class="copy-btn text-primary dark:text-blue-300 bg-white dark:bg-slate-700 border border-blue-100 dark:border-slate-600 hover:bg-blue-50 dark:hover:bg-slate-600 px-3 py-1.5 rounded-lg text-xs font-bold relative transition-all duration-200 focus:outline-none focus:ring-2 focus:ring-blue-300 active:scale-95 flex items-center gap-1.5 shadow-sm" aria-label="Copy DMV address script">
                             <i class="far fa-copy btn-icon"></i> <span class="btn-text">Copy</span>
                             <span class="copy-feedback shadow-lg">Copied!</span>
                         </button>
                     </div>
-                    <div class="p-5 text-slate-600 font-mono text-sm leading-relaxed bg-white selection:bg-blue-100 flex-1" id="script4">
+                    <div class="p-5 text-slate-600 dark:text-slate-300 font-mono text-sm leading-relaxed bg-white dark:bg-dark_surface selection:bg-blue-100 dark:selection:bg-blue-900/50 flex-1" id="script4">
                         <span class="script-en">You must visit the DMV and update your license to match your current residence.</span>
                         <span class="script-ru hidden">Вам необходимо посетить DMV и обновить водительское удостоверение, чтобы адрес в правах совпадал с вашим текущим местом жительства.</span>
                     </div>
                 </div>
 
                 <!-- Script 5 (Troubleshooting) -->
-                <div class="bg-white rounded-2xl border border-slate-200 overflow-hidden shadow-sm relative group hover:shadow-md hover:border-blue-300 transition-all duration-300 flex flex-col">
-                    <div class="bg-slate-50/80 px-5 py-3.5 border-b border-slate-100 flex justify-between items-center">
-                        <span class="font-bold text-xs text-primary uppercase tracking-wider flex items-center gap-2"><i class="fas fa-life-ring opacity-70"></i> 5. Не пришло письмо (Spam)</span>
-                        <button onclick="copyToClipboard('script5', this)" class="copy-btn text-primary bg-white border border-blue-100 hover:bg-blue-50 hover:border-blue-200 px-3 py-1.5 rounded-lg text-xs font-bold relative transition-all duration-200 focus:outline-none focus:ring-2 focus:ring-blue-300 active:scale-95 flex items-center gap-1.5 shadow-sm" aria-label="Copy Spam check script">
+                <div class="bg-white dark:bg-dark_surface rounded-2xl border border-slate-200 dark:border-dark_border overflow-hidden shadow-sm relative group hover:shadow-md hover:border-blue-300 dark:hover:border-blue-600 transition-all duration-300 flex flex-col">
+                    <div class="bg-slate-50/80 dark:bg-slate-800/50 px-5 py-3.5 border-b border-slate-100 dark:border-slate-700 flex justify-between items-center">
+                        <span class="font-bold text-xs text-primary dark:text-blue-400 uppercase tracking-wider flex items-center gap-2"><i class="fas fa-life-ring opacity-70"></i> 5. Не пришло письмо (Spam)</span>
+                        <button onclick="copyToClipboard('script5', this)" class="copy-btn text-primary dark:text-blue-300 bg-white dark:bg-slate-700 border border-blue-100 dark:border-slate-600 hover:bg-blue-50 dark:hover:bg-slate-600 px-3 py-1.5 rounded-lg text-xs font-bold relative transition-all duration-200 focus:outline-none focus:ring-2 focus:ring-blue-300 active:scale-95 flex items-center gap-1.5 shadow-sm" aria-label="Copy Spam check script">
                             <i class="far fa-copy btn-icon"></i> <span class="btn-text">Copy</span>
                             <span class="copy-feedback shadow-lg">Copied!</span>
                         </button>
                     </div>
-                    <div class="p-5 text-slate-600 font-mono text-sm leading-relaxed bg-white selection:bg-blue-100 flex-1" id="script5">
+                    <div class="p-5 text-slate-600 dark:text-slate-300 font-mono text-sm leading-relaxed bg-white dark:bg-dark_surface selection:bg-blue-100 dark:selection:bg-blue-900/50 flex-1" id="script5">
                         <span class="script-en">Please check your SPAM or JUNK folder for the email from FleetCare Pro. Sometimes it gets filtered out automatically.</span>
                         <span class="script-ru hidden">Пожалуйста, проверьте папку SPAM (или Рассылки) на наличие письма от FleetCare Pro. Иногда почтовые сервисы фильтруют его автоматически.</span>
                     </div>
                 </div>
 
                 <!-- Script 6 (Troubleshooting) -->
-                <div class="bg-white rounded-2xl border border-slate-200 overflow-hidden shadow-sm relative group hover:shadow-md hover:border-blue-300 transition-all duration-300 flex flex-col">
-                    <div class="bg-slate-50/80 px-5 py-3.5 border-b border-slate-100 flex justify-between items-center">
-                        <span class="font-bold text-xs text-primary uppercase tracking-wider flex items-center gap-2"><i class="fas fa-key opacity-70"></i> 6. Сброс пароля (Reset)</span>
-                        <button onclick="copyToClipboard('script6', this)" class="copy-btn text-primary bg-white border border-blue-100 hover:bg-blue-50 hover:border-blue-200 px-3 py-1.5 rounded-lg text-xs font-bold relative transition-all duration-200 focus:outline-none focus:ring-2 focus:ring-blue-300 active:scale-95 flex items-center gap-1.5 shadow-sm" aria-label="Copy Password Reset script">
+                <div class="bg-white dark:bg-dark_surface rounded-2xl border border-slate-200 dark:border-dark_border overflow-hidden shadow-sm relative group hover:shadow-md hover:border-blue-300 dark:hover:border-blue-600 transition-all duration-300 flex flex-col">
+                    <div class="bg-slate-50/80 dark:bg-slate-800/50 px-5 py-3.5 border-b border-slate-100 dark:border-slate-700 flex justify-between items-center">
+                        <span class="font-bold text-xs text-primary dark:text-blue-400 uppercase tracking-wider flex items-center gap-2"><i class="fas fa-key opacity-70"></i> 6. Сброс пароля (Reset)</span>
+                        <button onclick="copyToClipboard('script6', this)" class="copy-btn text-primary dark:text-blue-300 bg-white dark:bg-slate-700 border border-blue-100 dark:border-slate-600 hover:bg-blue-50 dark:hover:bg-slate-600 px-3 py-1.5 rounded-lg text-xs font-bold relative transition-all duration-200 focus:outline-none focus:ring-2 focus:ring-blue-300 active:scale-95 flex items-center gap-1.5 shadow-sm" aria-label="Copy Password Reset script">
                             <i class="far fa-copy btn-icon"></i> <span class="btn-text">Copy</span>
                             <span class="copy-feedback shadow-lg">Copied!</span>
                         </button>
                     </div>
-                    <div class="p-5 text-slate-600 font-mono text-sm leading-relaxed bg-white selection:bg-blue-100 flex-1" id="script6">
+                    <div class="p-5 text-slate-600 dark:text-slate-300 font-mono text-sm leading-relaxed bg-white dark:bg-dark_surface selection:bg-blue-100 dark:selection:bg-blue-900/50 flex-1" id="script6">
                         <span class="script-en">Please click 'Forgot Password' and reset it via your email. It's a standard security procedure. Check spam/junk after requesting the link.</span>
                         <span class="script-ru hidden">Пожалуйста, нажмите 'Forgot Password' и сбросьте пароль через email. Это стандартная процедура безопасности. Обязательно проверьте папку спам после того, как запросите ссылку.</span>
                     </div>
                 </div>
             </div>
 
-            <!-- Telegram statuses -->
-            <div class="bg-gradient-to-r from-blue-50 to-indigo-50 border border-blue-100 rounded-3xl p-6 md:p-8 shadow-sm relative overflow-hidden">
-                <div class="absolute right-0 bottom-0 opacity-5 -mb-10 -mr-10"><i class="fab fa-telegram text-[200px]"></i></div>
-                <h3 class="font-extrabold text-blue-900 mb-2 text-xl flex items-center gap-2"><i class="fab fa-telegram text-blue-500"></i> Телеграм Этикет и Статусы</h3>
-                <p class="text-sm text-blue-800/80 mb-6 font-medium bg-white/50 inline-block px-3 py-1.5 rounded-lg border border-blue-100/50">
-                    Всегда отвечайте (<kbd class="font-mono font-bold text-primary">reply</kbd>) на оригинальное сообщение с заявкой!
-                </p>
-                <div class="grid grid-cols-1 sm:grid-cols-3 gap-5 relative z-10">
-                    <div class="bg-white/80 backdrop-blur p-5 rounded-2xl shadow-sm border border-white hover:border-success/50 transition-colors">
-                        <div class="w-10 h-10 rounded-full bg-success/10 text-success flex items-center justify-center mb-3"><i class="fas fa-check"></i></div>
-                        <b class="text-slate-800 block mb-1 text-lg">Имя – DONE</b>
-                        <span class="text-xs text-slate-500 font-medium">Всё подписано, Safety Policy готов. FCP светится нужным цветом.</span>
-                    </div>
-                    <div class="bg-white/80 backdrop-blur p-5 rounded-2xl shadow-sm border border-white hover:border-accent/50 transition-colors">
-                        <div class="w-10 h-10 rounded-full bg-accent/10 text-accent flex items-center justify-center mb-3"><i class="fas fa-pen-nib"></i></div>
-                        <b class="text-slate-800 block mb-1 text-lg">Имя – SIGN</b>
-                        <span class="text-xs text-slate-500 font-medium">Документы готовы, ждем подписи.</span>
-                    </div>
-                    <div class="bg-white/80 backdrop-blur p-5 rounded-2xl shadow-sm border border-white hover:border-danger/50 transition-colors">
-                        <div class="w-10 h-10 rounded-full bg-danger/10 text-danger flex items-center justify-center mb-3"><i class="fas fa-clock"></i></div>
-                        <b class="text-slate-800 block mb-1 text-lg">Not Responding</b>
-                        <span class="text-xs text-slate-500 font-medium">Игнорирует более 4 часов.</span>
-                    </div>
-                </div>
-            </div>
-
-            <!-- Pagination Controls -->
-            <div class="pagination-controls mt-8 flex justify-between border-t border-slate-200/60 pt-6">
-                <button onclick="switchTab('rules')" class="flex items-center gap-2 bg-white border border-slate-200 hover:border-slate-400 hover:text-slate-800 px-5 py-2.5 rounded-xl font-semibold text-slate-500 transition-all shadow-sm group">
-                    <i class="fas fa-arrow-left group-hover:-translate-x-1 transition-transform"></i> Назад
-                </button>
-                <button onclick="switchTab('cases')" class="flex items-center gap-2 bg-white border border-slate-200 hover:border-primary hover:text-primary px-5 py-2.5 rounded-xl font-semibold text-slate-600 transition-all shadow-sm group">
-                    Далее: Сложные Кейсы <i class="fas fa-arrow-right group-hover:translate-x-1 transition-transform"></i>
-                </button>
-            </div>
         </div>
 
         <!-- SECTION: Cases -->
         <div id="cases" class="section-content max-w-5xl mx-auto pb-12 print-break-before">
-            <h2 class="text-3xl font-extrabold text-slate-800 mb-8 flex items-center gap-3 tracking-tight">
-                <span class="bg-accent/10 text-accent w-12 h-12 flex items-center justify-center rounded-xl"><i class="fas fa-user-shield"></i></span> Психология и Кейсы
+            <h2 class="text-3xl font-extrabold text-slate-800 dark:text-white mb-8 flex items-center gap-3 tracking-tight">
+                <span class="bg-accent/10 dark:bg-amber-900/30 text-accent w-12 h-12 flex items-center justify-center rounded-xl"><i class="fas fa-user-shield"></i></span> Психология и Кейсы
             </h2>
             
-            <div class="mb-10 bg-white p-6 md:p-8 rounded-3xl border border-slate-200/80 shadow-sm">
-                <h3 class="text-xl font-bold text-slate-800 mb-4 flex items-center gap-2"><i class="fas fa-brain text-accent text-2xl"></i> Тактика "Calm Pressure"</h3>
-                <p class="text-sm text-slate-500 mb-6 font-medium">Работа с водителями — это психология. Водители могут быть грубыми, уставшими за рулем или технически неграмотными. Ваша задача — быть профессиональным наставником и получить подпись, а не воспитывать человека.</p>
+            <div class="mb-10 bg-white dark:bg-dark_surface p-6 md:p-8 rounded-3xl border border-slate-200/80 dark:border-dark_border shadow-sm">
+                <h3 class="text-xl font-bold text-slate-800 dark:text-white mb-4 flex items-center gap-2"><i class="fas fa-brain text-accent text-2xl"></i> Тактика "Calm Pressure"</h3>
+                <p class="text-sm text-slate-500 dark:text-slate-400 mb-6 font-medium">Работа с водителями — это психология. Водители могут быть грубыми, уставшими за рулем или технически неграмотными. Ваша задача — быть профессиональным наставником и получить подпись, а не воспитывать человека.</p>
                 
                 <div class="grid md:grid-cols-3 gap-5">
-                    <div class="bg-slate-50/50 p-5 rounded-2xl border border-slate-100 border-t-4 border-t-accent hover:shadow-md transition-shadow">
-                        <b class="text-slate-800 block mb-3 text-sm flex items-center gap-2"><div class="bg-white p-1.5 rounded shadow-sm text-slate-400"><i class="fas fa-angry"></i></div> Злость из-за анкеты</b>
-                        <p class="text-[13px] text-slate-600 italic leading-relaxed">«Sir, I understand you are busy, but this is a backup application for FMCSA and a one-time registration. It will take only 5 minutes. Two buttons to click.»</p>
+                    <div class="bg-slate-50/50 dark:bg-slate-800/50 p-5 rounded-2xl border border-slate-100 dark:border-slate-700 border-t-4 border-t-accent hover:shadow-md transition-shadow">
+                        <b class="text-slate-800 dark:text-white block mb-3 text-sm flex items-center gap-2"><div class="bg-white dark:bg-slate-700 p-1.5 rounded shadow-sm text-slate-400 dark:text-slate-300"><i class="fas fa-angry"></i></div> Злость из-за анкеты</b>
+                        <p class="text-[13px] text-slate-600 dark:text-slate-300 italic leading-relaxed">«Sir, I understand you are busy, but this is a backup application for FMCSA and a one-time registration. It will take only 5 minutes. Two buttons to click.»</p>
                     </div>
-                    <div class="bg-slate-50/50 p-5 rounded-2xl border border-slate-100 border-t-4 border-t-primary hover:shadow-md transition-shadow">
-                        <b class="text-slate-800 block mb-3 text-sm flex items-center gap-2"><div class="bg-white p-1.5 rounded shadow-sm text-slate-400"><i class="fas fa-key"></i></div> Не может войти</b>
-                        <p class="text-[13px] text-slate-600 leading-relaxed"><i>«Please click 'Forgot Password' and reset it. ОБЯЗАТЕЛЬНО check spam/junk.»</i> <br><span class="text-slate-400 mt-2 block font-medium">(Подскажите про автосохранение паролей на iPhone, «проведите за руку»)</span></p>
+                    <div class="bg-slate-50/50 dark:bg-slate-800/50 p-5 rounded-2xl border border-slate-100 dark:border-slate-700 border-t-4 border-t-primary dark:border-t-blue-500 hover:shadow-md transition-shadow">
+                        <b class="text-slate-800 dark:text-white block mb-3 text-sm flex items-center gap-2"><div class="bg-white dark:bg-slate-700 p-1.5 rounded shadow-sm text-slate-400 dark:text-slate-300"><i class="fas fa-key"></i></div> Не может войти</b>
+                        <p class="text-[13px] text-slate-600 dark:text-slate-300 leading-relaxed"><i>«Please click 'Forgot Password' and reset it. ОБЯЗАТЕЛЬНО check spam/junk.»</i> <br><span class="text-slate-400 dark:text-slate-500 mt-2 block font-medium">(Подскажите про автосохранение паролей на iPhone, «проведите за руку»)</span></p>
                     </div>
-                    <div class="bg-slate-50/50 p-5 rounded-2xl border border-slate-100 border-t-4 border-t-danger hover:shadow-md transition-shadow">
-                        <b class="text-slate-800 block mb-3 text-sm flex items-center gap-2"><div class="bg-white p-1.5 rounded shadow-sm text-slate-400"><i class="fas fa-fire"></i></div> Позиция «Офис»</b>
-                        <p class="text-[13px] text-slate-600 leading-relaxed">На агрессию или сложные вопросы отвечайте: <i>«Let me check with the office.»</i> Это снимает личное напряжение и дает вам время. При отказе — эскалация.</p>
+                    <div class="bg-slate-50/50 dark:bg-slate-800/50 p-5 rounded-2xl border border-slate-100 dark:border-slate-700 border-t-4 border-t-danger hover:shadow-md transition-shadow">
+                        <b class="text-slate-800 dark:text-white block mb-3 text-sm flex items-center gap-2"><div class="bg-white dark:bg-slate-700 p-1.5 rounded shadow-sm text-slate-400 dark:text-slate-300"><i class="fas fa-fire"></i></div> Позиция «Офис»</b>
+                        <p class="text-[13px] text-slate-600 dark:text-slate-300 leading-relaxed">На агрессию или сложные вопросы отвечайте: <i>«Let me check with the office.»</i> Это снимает личное напряжение и дает вам время. При отказе — эскалация.</p>
                     </div>
                 </div>
             </div>
 
-            <h3 class="text-xl font-bold text-slate-800 mb-5 px-2">Редкие ситуации (Кейсы)</h3>
+            <h3 class="text-xl font-bold text-slate-800 dark:text-white mb-5 px-2">Редкие ситуации (Кейсы)</h3>
             <div class="space-y-4">
                 <!-- Accordions styled modernly -->
-                <div class="accordion-item bg-white rounded-2xl border border-slate-200/80 overflow-hidden shadow-sm hover:shadow-md transition-shadow duration-300">
-                    <button class="w-full px-6 py-5 text-left font-bold text-slate-800 flex justify-between items-center hover:bg-slate-50/50 focus:outline-none transition-colors group active:scale-[0.99]" onclick="toggleAccordion(this)" aria-expanded="false">
-                        <span class="flex items-center gap-3"><span class="w-8 h-8 rounded-full bg-primary/10 flex items-center justify-center text-primary"><i class="fas fa-file-invoice-dollar"></i></span> Husky Express (Owner-Operator I-9)</span>
-                        <div class="w-8 h-8 rounded-full bg-slate-50 flex items-center justify-center group-hover:bg-slate-200 transition-colors"><i class="fas fa-chevron-down text-slate-400"></i></div>
+                <div class="accordion-item bg-white dark:bg-dark_surface rounded-2xl border border-slate-200/80 dark:border-dark_border overflow-hidden shadow-sm hover:shadow-md transition-shadow duration-300">
+                    <button class="w-full px-6 py-5 text-left font-bold text-slate-800 dark:text-white flex justify-between items-center hover:bg-slate-50/50 dark:hover:bg-slate-800/50 focus:outline-none transition-colors group active:scale-[0.99]" onclick="toggleAccordion(this)" aria-expanded="false">
+                        <span class="flex items-center gap-3"><span class="w-8 h-8 rounded-full bg-primary/10 dark:bg-blue-900/30 flex items-center justify-center text-primary dark:text-blue-400"><i class="fas fa-file-invoice-dollar"></i></span> Husky Express (Owner-Operator I-9)</span>
+                        <div class="w-8 h-8 rounded-full bg-slate-50 dark:bg-slate-800 flex items-center justify-center group-hover:bg-slate-200 dark:group-hover:bg-slate-700 transition-colors"><i class="fas fa-chevron-down text-slate-400 dark:text-slate-500"></i></div>
                     </button>
-                    <div class="accordion-content bg-slate-50/50 border-t border-slate-100">
-                        <div class="p-6 md:px-10 text-sm text-slate-600">
+                    <div class="accordion-content bg-slate-50/50 dark:bg-slate-800/30 border-t border-slate-100 dark:border-slate-700">
+                        <div class="p-6 md:px-10 text-sm text-slate-600 dark:text-slate-300">
                             Если водитель — владелец, гражданин США и нанимает сам себя, в форме I-9/W9 необходимо:
                             <ul class="list-none mt-3 space-y-2">
                                 <li class="flex items-center gap-2"><i class="fas fa-check text-success"></i> Отметить чек-бокс <b>«Citizen of the United States»</b>.</li>
-                                <li class="flex items-center gap-2"><i class="fas fa-check text-success"></i> Во всех полях USCIS/I-94 проставить <code class="bg-white px-2 py-0.5 border border-slate-200 rounded font-bold shadow-sm">NA</code>.</li>
+                                <li class="flex items-center gap-2"><i class="fas fa-check text-success"></i> Во всех полях USCIS/I-94 проставить <code class="bg-white dark:bg-slate-800 px-2 py-0.5 border border-slate-200 dark:border-slate-600 rounded font-bold shadow-sm">NA</code>.</li>
                             </ul>
                         </div>
                     </div>
                 </div>
                 
-                <div class="accordion-item bg-white rounded-2xl border border-slate-200/80 overflow-hidden shadow-sm hover:shadow-md transition-shadow duration-300">
-                    <button class="w-full px-6 py-5 text-left font-bold text-slate-800 flex justify-between items-center hover:bg-slate-50/50 focus:outline-none transition-colors group active:scale-[0.99]" onclick="toggleAccordion(this)" aria-expanded="false">
-                        <span class="flex items-center gap-3"><span class="w-8 h-8 rounded-full bg-primary/10 flex items-center justify-center text-primary"><i class="fas fa-truck-loading"></i></span> Concrete Mixer / Dump Truck</span>
-                        <div class="w-8 h-8 rounded-full bg-slate-50 flex items-center justify-center group-hover:bg-slate-200 transition-colors"><i class="fas fa-chevron-down text-slate-400"></i></div>
+                <div class="accordion-item bg-white dark:bg-dark_surface rounded-2xl border border-slate-200/80 dark:border-dark_border overflow-hidden shadow-sm hover:shadow-md transition-shadow duration-300">
+                    <button class="w-full px-6 py-5 text-left font-bold text-slate-800 dark:text-white flex justify-between items-center hover:bg-slate-50/50 dark:hover:bg-slate-800/50 focus:outline-none transition-colors group active:scale-[0.99]" onclick="toggleAccordion(this)" aria-expanded="false">
+                        <span class="flex items-center gap-3"><span class="w-8 h-8 rounded-full bg-primary/10 dark:bg-blue-900/30 flex items-center justify-center text-primary dark:text-blue-400"><i class="fas fa-truck-loading"></i></span> Concrete Mixer / Dump Truck</span>
+                        <div class="w-8 h-8 rounded-full bg-slate-50 dark:bg-slate-800 flex items-center justify-center group-hover:bg-slate-200 dark:group-hover:bg-slate-700 transition-colors"><i class="fas fa-chevron-down text-slate-400 dark:text-slate-500"></i></div>
                     </button>
-                    <div class="accordion-content bg-slate-50/50 border-t border-slate-100">
-                        <div class="p-6 md:px-10 text-sm text-slate-600 leading-relaxed">
-                            Опыт управления бетономешалкой обязателен для внесения в историю (для исключения гэпов), но это не FMCSA-регулируемая работа (такие компании не всегда требуют DOT drug-testing). В графе «Subject to FMCSA regulations» ставится <code class="bg-white px-2 py-0.5 border border-slate-200 rounded font-bold shadow-sm">No</code>.
+                    <div class="accordion-content bg-slate-50/50 dark:bg-slate-800/30 border-t border-slate-100 dark:border-slate-700">
+                        <div class="p-6 md:px-10 text-sm text-slate-600 dark:text-slate-300 leading-relaxed">
+                            Опыт управления бетономешалкой обязателен для внесения в историю (для исключения гэпов), но это не FMCSA-регулируемая работа (такие компании не всегда требуют DOT drug-testing). В графе «Subject to FMCSA regulations» ставится <code class="bg-white dark:bg-slate-800 px-2 py-0.5 border border-slate-200 dark:border-slate-600 rounded font-bold shadow-sm">No</code>.
                         </div>
                     </div>
                 </div>
 
-                <div class="accordion-item bg-white rounded-2xl border border-slate-200/80 overflow-hidden shadow-sm hover:shadow-md transition-shadow duration-300">
-                    <button class="w-full px-6 py-5 text-left font-bold text-slate-800 flex justify-between items-center hover:bg-slate-50/50 focus:outline-none transition-colors group active:scale-[0.99]" onclick="toggleAccordion(this)" aria-expanded="false">
-                        <span class="flex items-center gap-3"><span class="w-8 h-8 rounded-full bg-primary/10 flex items-center justify-center text-primary"><i class="fas fa-users-cog"></i></span> Миграция старых водителей (Кейс Ахмеда)</span>
-                        <div class="w-8 h-8 rounded-full bg-slate-50 flex items-center justify-center group-hover:bg-slate-200 transition-colors"><i class="fas fa-chevron-down text-slate-400"></i></div>
+                <div class="accordion-item bg-white dark:bg-dark_surface rounded-2xl border border-slate-200/80 dark:border-dark_border overflow-hidden shadow-sm hover:shadow-md transition-shadow duration-300">
+                    <button class="w-full px-6 py-5 text-left font-bold text-slate-800 dark:text-white flex justify-between items-center hover:bg-slate-50/50 dark:hover:bg-slate-800/50 focus:outline-none transition-colors group active:scale-[0.99]" onclick="toggleAccordion(this)" aria-expanded="false">
+                        <span class="flex items-center gap-3"><span class="w-8 h-8 rounded-full bg-primary/10 dark:bg-blue-900/30 flex items-center justify-center text-primary dark:text-blue-400"><i class="fas fa-users-cog"></i></span> Миграция старых водителей (Кейс Ахмеда)</span>
+                        <div class="w-8 h-8 rounded-full bg-slate-50 dark:bg-slate-800 flex items-center justify-center group-hover:bg-slate-200 dark:group-hover:bg-slate-700 transition-colors"><i class="fas fa-chevron-down text-slate-400 dark:text-slate-500"></i></div>
                     </button>
-                    <div class="accordion-content bg-slate-50/50 border-t border-slate-100">
-                        <div class="p-6 md:px-10 text-sm text-slate-600 leading-relaxed">
+                    <div class="accordion-content bg-slate-50/50 dark:bg-slate-800/30 border-t border-slate-100 dark:border-slate-700">
+                        <div class="p-6 md:px-10 text-sm text-slate-600 dark:text-slate-300 leading-relaxed">
                             Если старые водители отказываются заполнять FCP («Я уже всё заполнял»): спокойно объясняем, что это федеральное бэкап-требование FMCSA. При упорном отказе — это легитимный повод для звонка Safety-менеджеру для административного давления.
                         </div>
                     </div>
@@ -762,11 +749,11 @@
             </div>
 
             <!-- Pagination Controls -->
-            <div class="pagination-controls mt-8 flex justify-between border-t border-slate-200/60 pt-6">
-                <button onclick="switchTab('scripts')" class="flex items-center gap-2 bg-white border border-slate-200 hover:border-slate-400 hover:text-slate-800 px-5 py-2.5 rounded-xl font-semibold text-slate-500 transition-all shadow-sm group">
+            <div class="pagination-controls mt-8 flex justify-between border-t border-slate-200/60 dark:border-dark_border pt-6">
+                <button onclick="switchTab('scripts')" class="flex items-center gap-2 bg-white dark:bg-dark_surface border border-slate-200 dark:border-dark_border hover:border-slate-400 dark:hover:border-slate-500 hover:text-slate-800 dark:hover:text-white px-5 py-2.5 rounded-xl font-semibold text-slate-500 dark:text-slate-400 transition-all shadow-sm group">
                     <i class="fas fa-arrow-left group-hover:-translate-x-1 transition-transform"></i> Назад
                 </button>
-                <button onclick="switchTab('glossary')" class="flex items-center gap-2 bg-white border border-slate-200 hover:border-primary hover:text-primary px-5 py-2.5 rounded-xl font-semibold text-slate-600 transition-all shadow-sm group">
+                <button onclick="switchTab('glossary')" class="flex items-center gap-2 bg-white dark:bg-dark_surface border border-slate-200 dark:border-dark_border hover:border-primary dark:hover:border-blue-500 hover:text-primary dark:hover:text-blue-400 px-5 py-2.5 rounded-xl font-semibold text-slate-600 dark:text-slate-300 transition-all shadow-sm group">
                     Далее: Глоссарий <i class="fas fa-arrow-right group-hover:translate-x-1 transition-transform"></i>
                 </button>
             </div>
@@ -774,16 +761,16 @@
 
         <!-- SECTION: Glossary -->
         <div id="glossary" class="section-content max-w-5xl mx-auto pb-12 print-break-before">
-            <h2 class="text-3xl font-extrabold text-slate-800 mb-8 flex items-center gap-3 tracking-tight">
-                <span class="bg-indigo-100 text-indigo-600 w-12 h-12 flex items-center justify-center rounded-xl"><i class="fas fa-book"></i></span> Глоссарий
+            <h2 class="text-3xl font-extrabold text-slate-800 dark:text-white mb-8 flex items-center gap-3 tracking-tight">
+                <span class="bg-indigo-100 dark:bg-indigo-900/30 text-indigo-600 dark:text-indigo-400 w-12 h-12 flex items-center justify-center rounded-xl"><i class="fas fa-book"></i></span> Глоссарий
             </h2>
 
             <!-- Live Search Bar -->
             <div class="mb-8 relative group">
-                <div class="absolute inset-y-0 left-0 pl-4 flex items-center pointer-events-none transition-colors group-focus-within:text-primary text-slate-400">
+                <div class="absolute inset-y-0 left-0 pl-4 flex items-center pointer-events-none transition-colors group-focus-within:text-primary dark:group-focus-within:text-blue-400 text-slate-400">
                     <i class="fas fa-search text-lg"></i>
                 </div>
-                <input type="text" id="glossary-search" oninput="searchGlossary()" class="block w-full pl-12 pr-12 py-4 border-2 border-slate-200/80 rounded-2xl leading-5 bg-white placeholder-slate-400 focus:outline-none focus:ring-0 focus:border-primary text-base font-medium transition-all shadow-sm hover:shadow-md" placeholder="Искать аббревиатуру (MVR, DQF, Gap)..." autocomplete="off">
+                <input type="text" id="glossary-search" oninput="searchGlossary()" class="block w-full pl-12 pr-12 py-4 border-2 border-slate-200/80 dark:border-dark_border rounded-2xl leading-5 bg-white dark:bg-dark_surface placeholder-slate-400 focus:outline-none focus:ring-0 focus:border-primary dark:focus:border-blue-500 text-base font-medium transition-all shadow-sm hover:shadow-md dark:text-white" placeholder="Искать аббревиатуру (MVR, DQF, Gap)..." autocomplete="off">
                 <!-- Clear Button -->
                 <button id="clear-search" onclick="clearSearch()" class="absolute inset-y-0 right-0 pr-4 flex items-center text-slate-400 hover:text-danger hidden focus:outline-none" aria-label="Очистить поиск">
                     <i class="fas fa-times-circle text-lg"></i>
@@ -792,89 +779,89 @@
 
             <!-- Empty State for Search -->
             <div id="no-results-state" class="hidden py-16 text-center animate-fade-in">
-                <div class="w-20 h-20 bg-slate-100 rounded-full flex items-center justify-center mx-auto mb-4">
-                    <i class="fas fa-search-minus text-3xl text-slate-300"></i>
+                <div class="w-20 h-20 bg-slate-100 dark:bg-slate-800 rounded-full flex items-center justify-center mx-auto mb-4">
+                    <i class="fas fa-search-minus text-3xl text-slate-300 dark:text-slate-500"></i>
                 </div>
-                <h3 class="text-lg font-bold text-slate-700 mb-1">Ничего не найдено</h3>
-                <p class="text-slate-500">Попробуйте ввести другой термин или аббревиатуру.</p>
+                <h3 class="text-lg font-bold text-slate-700 dark:text-slate-200 mb-1">Ничего не найдено</h3>
+                <p class="text-slate-500 dark:text-slate-400">Попробуйте ввести другой термин или аббревиатуру.</p>
             </div>
             
             <div class="space-y-4" id="glossary-container">
-                <div class="accordion-item active bg-white rounded-2xl border border-slate-200/80 overflow-hidden shadow-sm glossary-category hover:shadow-md transition-shadow">
-                    <button class="w-full px-6 py-5 text-left font-bold text-slate-800 flex justify-between items-center bg-slate-50/50 hover:bg-slate-100/50 focus:outline-none transition-colors" onclick="toggleAccordion(this)" aria-expanded="true">
+                <div class="accordion-item active bg-white dark:bg-dark_surface rounded-2xl border border-slate-200/80 dark:border-dark_border overflow-hidden shadow-sm glossary-category hover:shadow-md transition-shadow">
+                    <button class="w-full px-6 py-5 text-left font-bold text-slate-800 dark:text-white flex justify-between items-center bg-slate-50/50 dark:bg-slate-800/50 hover:bg-slate-100/50 dark:hover:bg-slate-800 focus:outline-none transition-colors" onclick="toggleAccordion(this)" aria-expanded="true">
                         Фундаментальные роли
-                        <div class="w-8 h-8 rounded-full bg-white shadow-sm flex items-center justify-center"><i class="fas fa-chevron-down text-slate-400"></i></div>
+                        <div class="w-8 h-8 rounded-full bg-white dark:bg-slate-700 shadow-sm flex items-center justify-center"><i class="fas fa-chevron-down text-slate-400 dark:text-slate-300"></i></div>
                     </button>
-                    <div class="accordion-content border-t border-slate-100">
+                    <div class="accordion-content border-t border-slate-100 dark:border-slate-700">
                         <div class="p-2 md:p-6 overflow-x-auto">
-                            <table class="w-full text-sm text-left text-slate-600 min-w-[500px]">
+                            <table class="w-full text-sm text-left text-slate-600 dark:text-slate-300 min-w-[500px]">
                                 <tbody>
-                                    <tr class="border-b border-slate-100 glossary-row hover:bg-slate-50 transition-colors"><td class="py-4 px-4 font-bold text-primary w-1/4 align-top rounded-l-lg search-target">Driver</td><td class="py-4 px-4 rounded-r-lg search-target">Наемный сотрудник (W2), управляющий техникой. В анкете - «Driver».</td></tr>
-                                    <tr class="border-b border-slate-100 glossary-row hover:bg-slate-50 transition-colors"><td class="py-4 px-4 font-bold text-primary align-top rounded-l-lg search-target">Owner Operator</td><td class="py-4 px-4 rounded-r-lg search-target">Водитель, владеющий собственным траком. Несет полную ответственность за обслуживание.</td></tr>
-                                    <tr class="border-b border-slate-100 glossary-row hover:bg-slate-50 transition-colors"><td class="py-4 px-4 font-bold text-primary align-top rounded-l-lg search-target">Independent Contractor</td><td class="py-4 px-4 rounded-r-lg search-target">Оплата на бизнес-счет (LLC/Inc), форма налоговой отчетности 1099. Требует EIN.</td></tr>
-                                    <tr class="glossary-row hover:bg-slate-50 transition-colors"><td class="py-4 px-4 font-bold text-primary align-top rounded-l-lg search-target">Safety Manager</td><td class="py-4 px-4 rounded-r-lg search-target">Эксперт по DOT/FMCSA. Право одобрять/отклонять кандидатов.</td></tr>
+                                    <tr class="border-b border-slate-100 dark:border-slate-700 glossary-row hover:bg-slate-50 dark:hover:bg-slate-800/50 transition-colors"><td class="py-4 px-4 font-bold text-primary dark:text-blue-400 w-1/4 align-top rounded-l-lg search-target">Driver</td><td class="py-4 px-4 rounded-r-lg search-target">Наемный сотрудник (W2), управляющий техникой. В анкете - «Driver».</td></tr>
+                                    <tr class="border-b border-slate-100 dark:border-slate-700 glossary-row hover:bg-slate-50 dark:hover:bg-slate-800/50 transition-colors"><td class="py-4 px-4 font-bold text-primary dark:text-blue-400 align-top rounded-l-lg search-target">Owner Operator</td><td class="py-4 px-4 rounded-r-lg search-target">Водитель, владеющий собственным траком. Несет полную ответственность за обслуживание.</td></tr>
+                                    <tr class="border-b border-slate-100 dark:border-slate-700 glossary-row hover:bg-slate-50 dark:hover:bg-slate-800/50 transition-colors"><td class="py-4 px-4 font-bold text-primary dark:text-blue-400 align-top rounded-l-lg search-target">Independent Contractor</td><td class="py-4 px-4 rounded-r-lg search-target">Оплата на бизнес-счет (LLC/Inc), форма налоговой отчетности 1099. Требует EIN.</td></tr>
+                                    <tr class="glossary-row hover:bg-slate-50 dark:hover:bg-slate-800/50 transition-colors"><td class="py-4 px-4 font-bold text-primary dark:text-blue-400 align-top rounded-l-lg search-target">Safety Manager</td><td class="py-4 px-4 rounded-r-lg search-target">Эксперт по DOT/FMCSA. Право одобрять/отклонять кандидатов.</td></tr>
                                 </tbody>
                             </table>
                         </div>
                     </div>
                 </div>
 
-                <div class="accordion-item bg-white rounded-2xl border border-slate-200/80 overflow-hidden shadow-sm glossary-category hover:shadow-md transition-shadow">
-                    <button class="w-full px-6 py-5 text-left font-bold text-slate-800 flex justify-between items-center bg-slate-50/50 hover:bg-slate-100/50 focus:outline-none transition-colors" onclick="toggleAccordion(this)" aria-expanded="false">
+                <div class="accordion-item bg-white dark:bg-dark_surface rounded-2xl border border-slate-200/80 dark:border-dark_border overflow-hidden shadow-sm glossary-category hover:shadow-md transition-shadow">
+                    <button class="w-full px-6 py-5 text-left font-bold text-slate-800 dark:text-white flex justify-between items-center bg-slate-50/50 dark:bg-slate-800/50 hover:bg-slate-100/50 dark:hover:bg-slate-800 focus:outline-none transition-colors" onclick="toggleAccordion(this)" aria-expanded="false">
                         Регуляторы и документы
-                        <div class="w-8 h-8 rounded-full bg-white shadow-sm flex items-center justify-center"><i class="fas fa-chevron-down text-slate-400"></i></div>
+                        <div class="w-8 h-8 rounded-full bg-white dark:bg-slate-700 shadow-sm flex items-center justify-center"><i class="fas fa-chevron-down text-slate-400 dark:text-slate-300"></i></div>
                     </button>
-                    <div class="accordion-content border-t border-slate-100">
+                    <div class="accordion-content border-t border-slate-100 dark:border-slate-700">
                         <div class="p-2 md:p-6 overflow-x-auto">
-                            <table class="w-full text-sm text-left text-slate-600 min-w-[500px]">
+                            <table class="w-full text-sm text-left text-slate-600 dark:text-slate-300 min-w-[500px]">
                                 <tbody>
-                                    <tr class="border-b border-slate-100 glossary-row hover:bg-slate-50 transition-colors"><td class="py-4 px-4 font-bold text-primary w-1/4 align-top rounded-l-lg search-target">FMCSA</td><td class="py-4 px-4 rounded-r-lg search-target">Федеральное агентство безопасности коммерческих перевозок. Нарушение = закрытие бизнеса.</td></tr>
-                                    <tr class="border-b border-slate-100 glossary-row hover:bg-slate-50 transition-colors"><td class="py-4 px-4 font-bold text-primary align-top rounded-l-lg search-target">DOT</td><td class="py-4 px-4 rounded-r-lg search-target">Минтранс США. Устанавливает стандарты (включая Drug & Alcohol Testing).</td></tr>
-                                    <tr class="border-b border-slate-100 glossary-row hover:bg-slate-50 transition-colors"><td class="py-4 px-4 font-bold text-primary align-top rounded-l-lg search-target">DQF</td><td class="py-4 px-4 rounded-r-lg search-target"><b>Driver Qualification File</b>. Личное дело водителя, которое вы собираете для защиты от исков по «небрежному найму».</td></tr>
-                                    <tr class="border-b border-slate-100 glossary-row hover:bg-slate-50 transition-colors"><td class="py-4 px-4 font-bold text-primary align-top rounded-l-lg search-target">EIN</td><td class="py-4 px-4 rounded-r-lg search-target">Налоговый номер компании (LLC). Брать строго из IRS Treasury Letter (SS-4).</td></tr>
-                                    <tr class="border-b border-slate-100 glossary-row hover:bg-slate-50 transition-colors"><td class="py-4 px-4 font-bold text-primary align-top rounded-l-lg search-target">IRS</td><td class="py-4 px-4 rounded-r-lg search-target">Налоговая служба США. Формы W9, 1099, W2.</td></tr>
-                                    <tr class="glossary-row hover:bg-slate-50 transition-colors"><td class="py-4 px-4 font-bold text-primary align-top rounded-l-lg search-target">SSN</td><td class="py-4 px-4 rounded-r-lg search-target">Номер соц. страхования. FCP проверяет его формат на наличие алертов (Warning).</td></tr>
+                                    <tr class="border-b border-slate-100 dark:border-slate-700 glossary-row hover:bg-slate-50 dark:hover:bg-slate-800/50 transition-colors"><td class="py-4 px-4 font-bold text-primary dark:text-blue-400 w-1/4 align-top rounded-l-lg search-target">FMCSA</td><td class="py-4 px-4 rounded-r-lg search-target">Федеральное агентство безопасности коммерческих перевозок. Нарушение = закрытие бизнеса.</td></tr>
+                                    <tr class="border-b border-slate-100 dark:border-slate-700 glossary-row hover:bg-slate-50 dark:hover:bg-slate-800/50 transition-colors"><td class="py-4 px-4 font-bold text-primary dark:text-blue-400 align-top rounded-l-lg search-target">DOT</td><td class="py-4 px-4 rounded-r-lg search-target">Минтранс США. Устанавливает стандарты (включая Drug & Alcohol Testing).</td></tr>
+                                    <tr class="border-b border-slate-100 dark:border-slate-700 glossary-row hover:bg-slate-50 dark:hover:bg-slate-800/50 transition-colors"><td class="py-4 px-4 font-bold text-primary dark:text-blue-400 align-top rounded-l-lg search-target">DQF</td><td class="py-4 px-4 rounded-r-lg search-target"><b>Driver Qualification File</b>. Личное дело водителя, которое вы собираете для защиты от исков по «небрежному найму».</td></tr>
+                                    <tr class="border-b border-slate-100 dark:border-slate-700 glossary-row hover:bg-slate-50 dark:hover:bg-slate-800/50 transition-colors"><td class="py-4 px-4 font-bold text-primary dark:text-blue-400 align-top rounded-l-lg search-target">EIN</td><td class="py-4 px-4 rounded-r-lg search-target">Налоговый номер компании (LLC). Брать строго из IRS Treasury Letter (SS-4).</td></tr>
+                                    <tr class="border-b border-slate-100 dark:border-slate-700 glossary-row hover:bg-slate-50 dark:hover:bg-slate-800/50 transition-colors"><td class="py-4 px-4 font-bold text-primary dark:text-blue-400 align-top rounded-l-lg search-target">IRS</td><td class="py-4 px-4 rounded-r-lg search-target">Налоговая служба США. Формы W9, 1099, W2.</td></tr>
+                                    <tr class="glossary-row hover:bg-slate-50 dark:hover:bg-slate-800/50 transition-colors"><td class="py-4 px-4 font-bold text-primary dark:text-blue-400 align-top rounded-l-lg search-target">SSN</td><td class="py-4 px-4 rounded-r-lg search-target">Номер соц. страхования. FCP проверяет его формат на наличие алертов (Warning).</td></tr>
                                 </tbody>
                             </table>
                         </div>
                     </div>
                 </div>
 
-                <div class="accordion-item bg-white rounded-2xl border border-slate-200/80 overflow-hidden shadow-sm glossary-category hover:shadow-md transition-shadow">
-                    <button class="w-full px-6 py-5 text-left font-bold text-slate-800 flex justify-between items-center bg-slate-50/50 hover:bg-slate-100/50 focus:outline-none transition-colors" onclick="toggleAccordion(this)" aria-expanded="false">
+                <div class="accordion-item bg-white dark:bg-dark_surface rounded-2xl border border-slate-200/80 dark:border-dark_border overflow-hidden shadow-sm glossary-category hover:shadow-md transition-shadow">
+                    <button class="w-full px-6 py-5 text-left font-bold text-slate-800 dark:text-white flex justify-between items-center bg-slate-50/50 dark:bg-slate-800/50 hover:bg-slate-100/50 dark:hover:bg-slate-800 focus:outline-none transition-colors" onclick="toggleAccordion(this)" aria-expanded="false">
                         Отчеты (Safety Records)
-                        <div class="w-8 h-8 rounded-full bg-white shadow-sm flex items-center justify-center"><i class="fas fa-chevron-down text-slate-400"></i></div>
+                        <div class="w-8 h-8 rounded-full bg-white dark:bg-slate-700 shadow-sm flex items-center justify-center"><i class="fas fa-chevron-down text-slate-400 dark:text-slate-300"></i></div>
                     </button>
-                    <div class="accordion-content border-t border-slate-100">
+                    <div class="accordion-content border-t border-slate-100 dark:border-slate-700">
                         <div class="p-2 md:p-6 overflow-x-auto">
-                            <table class="w-full text-sm text-left text-slate-600 min-w-[500px]">
+                            <table class="w-full text-sm text-left text-slate-600 dark:text-slate-300 min-w-[500px]">
                                 <tbody>
-                                    <tr class="border-b border-slate-100 glossary-row hover:bg-slate-50 transition-colors"><td class="py-4 px-4 font-bold text-primary w-1/4 align-top rounded-l-lg search-target">CDL</td><td class="py-4 px-4 rounded-r-lg search-target">Коммерческие права (Class A). Адрес должен совпадать! Ошибки могут привести к незаконному управлению грузами.</td></tr>
-                                    <tr class="border-b border-slate-100 glossary-row hover:bg-slate-50 transition-colors"><td class="py-4 px-4 font-bold text-primary align-top rounded-l-lg search-target">PSP</td><td class="py-4 px-4 rounded-r-lg search-target">Отчет об инспекциях за 5 лет. Самый надежный источник (приоритет над MVR). Помогает найти скрытые компании.</td></tr>
-                                    <tr class="border-b border-slate-100 glossary-row hover:bg-slate-50 transition-colors"><td class="py-4 px-4 font-bold text-primary align-top rounded-l-lg search-target">MVR</td><td class="py-4 px-4 rounded-r-lg search-target">История штрафов (тикеты) от штата за 3 года (фокус на Speeding).</td></tr>
-                                    <tr class="border-b border-slate-100 glossary-row hover:bg-slate-50 transition-colors"><td class="py-4 px-4 font-bold text-primary align-top rounded-l-lg search-target">Violation</td><td class="py-4 px-4 rounded-r-lg search-target">Driver Violation (вносим в анкету) vs Vehicle Violation (игнорируем).</td></tr>
-                                    <tr class="glossary-row hover:bg-slate-50 transition-colors"><td class="py-4 px-4 font-bold text-primary align-top rounded-l-lg search-target">Conviction</td><td class="py-4 px-4 rounded-r-lg search-target">Признанный штраф. Вносить хронологически.</td></tr>
+                                    <tr class="border-b border-slate-100 dark:border-slate-700 glossary-row hover:bg-slate-50 dark:hover:bg-slate-800/50 transition-colors"><td class="py-4 px-4 font-bold text-primary dark:text-blue-400 w-1/4 align-top rounded-l-lg search-target">CDL</td><td class="py-4 px-4 rounded-r-lg search-target">Коммерческие права (Class A). Адрес должен совпадать! Ошибки могут привести к незаконному управлению грузами.</td></tr>
+                                    <tr class="border-b border-slate-100 dark:border-slate-700 glossary-row hover:bg-slate-50 dark:hover:bg-slate-800/50 transition-colors"><td class="py-4 px-4 font-bold text-primary dark:text-blue-400 align-top rounded-l-lg search-target">PSP</td><td class="py-4 px-4 rounded-r-lg search-target">Отчет об инспекциях за 5 лет. Самый надежный источник (приоритет над MVR). Помогает найти скрытые компании.</td></tr>
+                                    <tr class="border-b border-slate-100 dark:border-slate-700 glossary-row hover:bg-slate-50 dark:hover:bg-slate-800/50 transition-colors"><td class="py-4 px-4 font-bold text-primary dark:text-blue-400 align-top rounded-l-lg search-target">MVR</td><td class="py-4 px-4 rounded-r-lg search-target">История штрафов (тикеты) от штата за 3 года (фокус на Speeding).</td></tr>
+                                    <tr class="border-b border-slate-100 dark:border-slate-700 glossary-row hover:bg-slate-50 dark:hover:bg-slate-800/50 transition-colors"><td class="py-4 px-4 font-bold text-primary dark:text-blue-400 align-top rounded-l-lg search-target">Violation</td><td class="py-4 px-4 rounded-r-lg search-target">Driver Violation (вносим в анкету) vs Vehicle Violation (игнорируем).</td></tr>
+                                    <tr class="glossary-row hover:bg-slate-50 dark:hover:bg-slate-800/50 transition-colors"><td class="py-4 px-4 font-bold text-primary dark:text-blue-400 align-top rounded-l-lg search-target">Conviction</td><td class="py-4 px-4 rounded-r-lg search-target">Признанный штраф. Вносить хронологически.</td></tr>
                                 </tbody>
                             </table>
                         </div>
                     </div>
                 </div>
 
-                <div class="accordion-item bg-white rounded-2xl border border-slate-200/80 overflow-hidden shadow-sm glossary-category hover:shadow-md transition-shadow">
-                    <button class="w-full px-6 py-5 text-left font-bold text-slate-800 flex justify-between items-center bg-slate-50/50 hover:bg-slate-100/50 focus:outline-none transition-colors" onclick="toggleAccordion(this)" aria-expanded="false">
+                <div class="accordion-item bg-white dark:bg-dark_surface rounded-2xl border border-slate-200/80 dark:border-dark_border overflow-hidden shadow-sm glossary-category hover:shadow-md transition-shadow">
+                    <button class="w-full px-6 py-5 text-left font-bold text-slate-800 dark:text-white flex justify-between items-center bg-slate-50/50 dark:bg-slate-800/50 hover:bg-slate-100/50 dark:hover:bg-slate-800 focus:outline-none transition-colors" onclick="toggleAccordion(this)" aria-expanded="false">
                         ПО и Операционные термины
-                        <div class="w-8 h-8 rounded-full bg-white shadow-sm flex items-center justify-center"><i class="fas fa-chevron-down text-slate-400"></i></div>
+                        <div class="w-8 h-8 rounded-full bg-white dark:bg-slate-700 shadow-sm flex items-center justify-center"><i class="fas fa-chevron-down text-slate-400 dark:text-slate-300"></i></div>
                     </button>
-                    <div class="accordion-content border-t border-slate-100">
+                    <div class="accordion-content border-t border-slate-100 dark:border-slate-700">
                         <div class="p-2 md:p-6 overflow-x-auto">
-                            <table class="w-full text-sm text-left text-slate-600 min-w-[500px]">
+                            <table class="w-full text-sm text-left text-slate-600 dark:text-slate-300 min-w-[500px]">
                                 <tbody>
-                                    <tr class="border-b border-slate-100 glossary-row hover:bg-slate-50 transition-colors"><td class="py-4 px-4 font-bold text-primary w-1/4 align-top rounded-l-lg search-target">FleetCare Pro (FCP)</td><td class="py-4 px-4 rounded-r-lg search-target">Главный хаб. Ошибка в FCP — это риск провала проверки. Разделы: Contracts, Drivers App.</td></tr>
-                                    <tr class="border-b border-slate-100 glossary-row hover:bg-slate-50 transition-colors"><td class="py-4 px-4 font-bold text-primary align-top rounded-l-lg search-target">DocuSign / SignNow</td><td class="py-4 px-4 rounded-r-lg search-target">Система подписания. Нужно 8 страниц инициалов. Статус: Signed.</td></tr>
-                                    <tr class="border-b border-slate-100 glossary-row hover:bg-slate-50 transition-colors"><td class="py-4 px-4 font-bold text-primary align-top rounded-l-lg search-target">Clearinghouse</td><td class="py-4 px-4 rounded-r-lg search-target">База тестов на наркотики. Если позитив -> нужен SAP.</td></tr>
-                                    <tr class="border-b border-slate-100 glossary-row hover:bg-slate-50 transition-colors"><td class="py-4 px-4 font-bold text-primary align-top rounded-l-lg search-target">Gap / Unemployment</td><td class="py-4 px-4 rounded-r-lg search-target">Пробел > 1 мес недопустим. Ставим "Unemployment" для непрерывности дат.</td></tr>
-                                    <tr class="border-b border-slate-100 glossary-row hover:bg-slate-50 transition-colors"><td class="py-4 px-4 font-bold text-primary align-top rounded-l-lg search-target">Last Date on Duty</td><td class="py-4 px-4 rounded-r-lg search-target">Дата заполнения минус 7 дней. Часы в последнюю неделю = 0.</td></tr>
-                                    <tr class="glossary-row hover:bg-slate-50 transition-colors"><td class="py-4 px-4 font-bold text-primary align-top rounded-l-lg search-target">Endorsements / Restrictions</td><td class="py-4 px-4 rounded-r-lg search-target">Ограничения в CDL (например, пневмотормоза). Переносятся символ в символ. Если "None", пишем "N/A" или "None".</td></tr>
+                                    <tr class="border-b border-slate-100 dark:border-slate-700 glossary-row hover:bg-slate-50 dark:hover:bg-slate-800/50 transition-colors"><td class="py-4 px-4 font-bold text-primary dark:text-blue-400 w-1/4 align-top rounded-l-lg search-target">FleetCare Pro (FCP)</td><td class="py-4 px-4 rounded-r-lg search-target">Главный хаб. Ошибка в FCP — это риск провала проверки. Разделы: Contracts, Drivers App.</td></tr>
+                                    <tr class="border-b border-slate-100 dark:border-slate-700 glossary-row hover:bg-slate-50 dark:hover:bg-slate-800/50 transition-colors"><td class="py-4 px-4 font-bold text-primary dark:text-blue-400 align-top rounded-l-lg search-target">DocuSign / SignNow</td><td class="py-4 px-4 rounded-r-lg search-target">Система подписания. Нужно 8 страниц инициалов. Статус: Signed.</td></tr>
+                                    <tr class="border-b border-slate-100 dark:border-slate-700 glossary-row hover:bg-slate-50 dark:hover:bg-slate-800/50 transition-colors"><td class="py-4 px-4 font-bold text-primary dark:text-blue-400 align-top rounded-l-lg search-target">Clearinghouse</td><td class="py-4 px-4 rounded-r-lg search-target">База тестов на наркотики. Если позитив -> нужен SAP.</td></tr>
+                                    <tr class="border-b border-slate-100 dark:border-slate-700 glossary-row hover:bg-slate-50 dark:hover:bg-slate-800/50 transition-colors"><td class="py-4 px-4 font-bold text-primary dark:text-blue-400 align-top rounded-l-lg search-target">Gap / Unemployment</td><td class="py-4 px-4 rounded-r-lg search-target">Пробел > 1 мес недопустим. Ставим "Unemployment" для непрерывности дат.</td></tr>
+                                    <tr class="border-b border-slate-100 dark:border-slate-700 glossary-row hover:bg-slate-50 dark:hover:bg-slate-800/50 transition-colors"><td class="py-4 px-4 font-bold text-primary dark:text-blue-400 align-top rounded-l-lg search-target">Last Date on Duty</td><td class="py-4 px-4 rounded-r-lg search-target">Дата заполнения минус 7 дней. Часы в последнюю неделю = 0.</td></tr>
+                                    <tr class="glossary-row hover:bg-slate-50 dark:hover:bg-slate-800/50 transition-colors"><td class="py-4 px-4 font-bold text-primary dark:text-blue-400 align-top rounded-l-lg search-target">Endorsements / Restrictions</td><td class="py-4 px-4 rounded-r-lg search-target">Ограничения в CDL (например, пневмотормоза). Переносятся символ в символ. Если "None", пишем "N/A" или "None".</td></tr>
                                 </tbody>
                             </table>
                         </div>
@@ -883,11 +870,11 @@
             </div>
 
             <!-- Pagination Controls -->
-            <div class="pagination-controls mt-8 flex justify-between border-t border-slate-200/60 pt-6">
-                <button onclick="switchTab('cases')" class="flex items-center gap-2 bg-white border border-slate-200 hover:border-slate-400 hover:text-slate-800 px-5 py-2.5 rounded-xl font-semibold text-slate-500 transition-all shadow-sm group">
+            <div class="pagination-controls mt-8 flex justify-between border-t border-slate-200/60 dark:border-dark_border pt-6">
+                <button onclick="switchTab('cases')" class="flex items-center gap-2 bg-white dark:bg-dark_surface border border-slate-200 dark:border-dark_border hover:border-slate-400 dark:hover:border-slate-500 hover:text-slate-800 dark:hover:text-white px-5 py-2.5 rounded-xl font-semibold text-slate-500 dark:text-slate-400 transition-all shadow-sm group">
                     <i class="fas fa-arrow-left group-hover:-translate-x-1 transition-transform"></i> Назад
                 </button>
-                <button onclick="switchTab('checklist')" class="flex items-center gap-2 bg-white border border-success hover:border-success hover:bg-success hover:text-white px-5 py-2.5 rounded-xl font-semibold text-success transition-all shadow-sm group">
+                <button onclick="switchTab('checklist')" class="flex items-center gap-2 bg-white dark:bg-dark_surface border border-success dark:border-emerald-600 hover:border-success hover:bg-success dark:hover:bg-emerald-600 hover:text-white px-5 py-2.5 rounded-xl font-semibold text-success dark:text-emerald-500 transition-all shadow-sm group">
                     Финальный Чек-лист <i class="fas fa-arrow-right group-hover:translate-x-1 transition-transform"></i>
                 </button>
             </div>
@@ -895,91 +882,114 @@
 
         <!-- SECTION: Checklist -->
         <div id="checklist" class="section-content max-w-4xl mx-auto pb-12 print-break-before">
-            <h2 class="text-3xl font-extrabold text-slate-800 mb-8 flex items-center gap-3 tracking-tight">
-                <span class="bg-success/10 text-success w-12 h-12 flex items-center justify-center rounded-xl"><i class="fas fa-check-double"></i></span> Финальный Чек-лист
+            <h2 class="text-3xl font-extrabold text-slate-800 dark:text-white mb-8 flex items-center gap-3 tracking-tight">
+                <span class="bg-success/10 dark:bg-emerald-900/30 text-success dark:text-emerald-400 w-12 h-12 flex items-center justify-center rounded-xl"><i class="fas fa-check-double"></i></span> Финальный Чек-лист
             </h2>
             
-            <div class="bg-white rounded-3xl shadow-xl shadow-slate-200/50 border border-slate-200 p-6 md:p-10 relative overflow-hidden">
+            <div class="bg-white dark:bg-dark_surface rounded-3xl shadow-xl shadow-slate-200/50 dark:shadow-none border border-slate-200 dark:border-dark_border p-6 md:p-10 relative overflow-hidden">
                 <!-- Decorative background elements -->
-                <div class="absolute top-0 right-0 w-64 h-64 bg-success/5 rounded-full blur-3xl -mr-20 -mt-20 pointer-events-none"></div>
+                <div class="absolute top-0 right-0 w-64 h-64 bg-success/5 dark:bg-emerald-900/10 rounded-full blur-3xl -mr-20 -mt-20 pointer-events-none"></div>
                 
-                <p class="text-slate-500 mb-8 font-medium text-lg">Перед сменой статуса на <code class="bg-slate-100 text-primary px-2 py-0.5 rounded-md font-bold text-sm shadow-sm border border-slate-200">DONE</code>, отметьте готовность DQF:</p>
+                <p class="text-slate-500 dark:text-slate-400 mb-8 font-medium text-lg relative z-10">Перед сменой статуса на <code class="bg-slate-100 dark:bg-slate-800 text-primary dark:text-blue-300 px-2 py-0.5 rounded-md font-bold text-sm shadow-sm border border-slate-200 dark:border-slate-700">DONE</code>, отметьте готовность DQF:</p>
                 
+                <!-- Smart Status Panel -->
+                <div class="smart-status-panel mb-8 p-5 bg-blue-50 dark:bg-blue-900/20 border border-blue-200 dark:border-blue-800/50 rounded-2xl flex flex-col sm:flex-row gap-4 items-center justify-between relative z-10">
+                    <div class="w-full sm:w-1/2">
+                        <label for="driver-name" class="block text-xs font-bold text-blue-800 dark:text-blue-300 uppercase tracking-wider mb-1">Имя Водителя:</label>
+                        <input type="text" id="driver-name" placeholder="Например: Иван Иванов" oninput="updateSmartAction()" class="w-full bg-white dark:bg-slate-800 border border-blue-200 dark:border-slate-600 rounded-lg px-3 py-2 text-sm text-slate-800 dark:text-white focus:outline-none focus:ring-2 focus:ring-blue-400">
+                    </div>
+                    <div class="w-full sm:w-auto flex-1 flex justify-end">
+                        <button id="smart-action-btn" onclick="copySmartStatus()" class="w-full sm:w-auto bg-white dark:bg-slate-700 border border-blue-200 dark:border-slate-600 text-primary dark:text-blue-300 hover:bg-blue-100 dark:hover:bg-slate-600 px-4 py-2.5 rounded-xl font-bold transition-all shadow-sm flex items-center justify-center gap-2">
+                            <i class="fab fa-telegram"></i> <span id="smart-action-text">Скопировать статус</span>
+                            <span class="copy-feedback-smart absolute -top-8 bg-slate-800 text-white text-xs py-1 px-2 rounded opacity-0 transition-opacity pointer-events-none">Скопировано!</span>
+                        </button>
+                    </div>
+                </div>
+
                 <!-- Progress Bar Container -->
-                <div class="mb-8 p-5 rounded-2xl border border-slate-100 bg-slate-50 shadow-inner transition-colors duration-500" id="progress-container">
-                    <div class="flex justify-between text-sm font-bold text-slate-700 mb-3 items-center">
+                <div class="mb-8 p-5 rounded-2xl border border-slate-100 dark:border-slate-700 bg-slate-50 dark:bg-slate-800/50 shadow-inner transition-colors duration-500 relative z-10" id="progress-container">
+                    <div class="flex justify-between text-sm font-bold text-slate-700 dark:text-slate-300 mb-3 items-center">
                         <span class="uppercase tracking-wider text-xs">Прогресс готовности</span>
-                        <span id="checklist-progress-text" class="text-primary font-mono text-base bg-white px-2 py-1 rounded-md shadow-sm border border-slate-100 transition-colors">0% (0/6)</span>
+                        <span id="checklist-progress-text" class="text-primary dark:text-blue-400 font-mono text-base bg-white dark:bg-slate-800 px-2 py-1 rounded-md shadow-sm border border-slate-100 dark:border-slate-700 transition-colors">0% (0/6)</span>
                     </div>
-                    <div class="w-full bg-slate-200/80 rounded-full h-4 overflow-hidden shadow-inner p-0.5">
-                        <div class="bg-primary h-full rounded-full transition-all duration-500 ease-out bg-stripes animate-stripes" id="checklist-progress-bar" style="width: 0%"></div>
+                    <div class="w-full bg-slate-200/80 dark:bg-slate-700 rounded-full h-4 overflow-hidden shadow-inner p-0.5">
+                        <div class="bg-primary dark:bg-blue-500 h-full rounded-full transition-all duration-500 ease-out bg-stripes animate-stripes" id="checklist-progress-bar" style="width: 0%"></div>
                     </div>
                 </div>
 
-                <div class="space-y-4" id="checklist-container">
-                    <label class="flex items-center gap-5 p-5 bg-white rounded-2xl cursor-pointer border-2 border-slate-100 hover:border-blue-200 transition-all shadow-sm group focus-within:ring-2 focus-within:ring-blue-300">
-                        <input type="checkbox" id="chk-1" onchange="updateChecklistProgress()" class="custom-checkbox flex-shrink-0 w-7 h-7 bg-slate-50 border-2 border-slate-300 rounded-lg checklist-checkbox" aria-label="CDL и Медкарта">
+                <div class="space-y-4 relative z-10" id="checklist-container">
+                    <label class="flex items-center gap-5 p-5 bg-white dark:bg-dark_surface rounded-2xl cursor-pointer border-2 border-slate-100 dark:border-dark_border hover:border-blue-200 dark:hover:border-blue-700 transition-all shadow-sm group focus-within:ring-2 focus-within:ring-blue-300">
+                        <input type="checkbox" id="chk-1" onchange="updateChecklistProgress()" class="custom-checkbox flex-shrink-0 w-7 h-7 bg-slate-50 dark:bg-slate-800 border-2 border-slate-300 dark:border-slate-600 rounded-lg checklist-checkbox" aria-label="CDL и Медкарта">
                         <div class="checklist-item-content flex-1">
-                            <span class="font-bold text-slate-800 block text-[17px] mb-1 group-hover:text-primary transition-colors">CDL и Медкарта верифицированы</span>
-                            <span class="text-sm text-slate-500 leading-snug block">Номер, штат, DOB и адреса совпадают на 100%. Адреса сошлись.</span>
+                            <span class="font-bold text-slate-800 dark:text-white block text-[17px] mb-1 group-hover:text-primary dark:group-hover:text-blue-400 transition-colors">CDL и Медкарта верифицированы</span>
+                            <span class="text-sm text-slate-500 dark:text-slate-400 leading-snug block">Номер, штат, DOB и адреса совпадают на 100%. Адреса сошлись.</span>
                         </div>
                     </label>
 
-                    <label class="flex items-center gap-5 p-5 bg-white rounded-2xl cursor-pointer border-2 border-slate-100 hover:border-blue-200 transition-all shadow-sm group focus-within:ring-2 focus-within:ring-blue-300">
-                        <input type="checkbox" id="chk-2" onchange="updateChecklistProgress()" class="custom-checkbox flex-shrink-0 w-7 h-7 bg-slate-50 border-2 border-slate-300 rounded-lg checklist-checkbox" aria-label="PSP и MVR">
+                    <label class="flex items-center gap-5 p-5 bg-white dark:bg-dark_surface rounded-2xl cursor-pointer border-2 border-slate-100 dark:border-dark_border hover:border-blue-200 dark:hover:border-blue-700 transition-all shadow-sm group focus-within:ring-2 focus-within:ring-blue-300">
+                        <input type="checkbox" id="chk-2" onchange="updateChecklistProgress()" class="custom-checkbox flex-shrink-0 w-7 h-7 bg-slate-50 dark:bg-slate-800 border-2 border-slate-300 dark:border-slate-600 rounded-lg checklist-checkbox" aria-label="PSP и MVR">
                         <div class="checklist-item-content flex-1">
-                            <span class="font-bold text-slate-800 block text-[17px] mb-1 group-hover:text-primary transition-colors">PSP и MVR проработаны</span>
-                            <span class="text-sm text-slate-500 leading-snug block">Все <b>Driver Violations</b> внесены вручную. Vehicle Violations отфильтрованы.</span>
+                            <span class="font-bold text-slate-800 dark:text-white block text-[17px] mb-1 group-hover:text-primary dark:group-hover:text-blue-400 transition-colors">PSP и MVR проработаны</span>
+                            <span class="text-sm text-slate-500 dark:text-slate-400 leading-snug block">Все <b>Driver Violations</b> внесены вручную. Vehicle Violations отфильтрованы.</span>
                         </div>
                     </label>
 
-                    <label class="flex items-center gap-5 p-5 bg-white rounded-2xl cursor-pointer border-2 border-slate-100 hover:border-blue-200 transition-all shadow-sm group focus-within:ring-2 focus-within:ring-blue-300">
-                        <input type="checkbox" id="chk-3" onchange="updateChecklistProgress()" class="custom-checkbox flex-shrink-0 w-7 h-7 bg-slate-50 border-2 border-slate-300 rounded-lg checklist-checkbox" aria-label="Опыт работы">
+                    <label class="flex items-center gap-5 p-5 bg-white dark:bg-dark_surface rounded-2xl cursor-pointer border-2 border-slate-100 dark:border-dark_border hover:border-blue-200 dark:hover:border-blue-700 transition-all shadow-sm group focus-within:ring-2 focus-within:ring-blue-300">
+                        <input type="checkbox" id="chk-3" onchange="updateChecklistProgress()" class="custom-checkbox flex-shrink-0 w-7 h-7 bg-slate-50 dark:bg-slate-800 border-2 border-slate-300 dark:border-slate-600 rounded-lg checklist-checkbox" aria-label="Опыт работы">
                         <div class="checklist-item-content flex-1">
-                            <span class="font-bold text-slate-800 block text-[17px] mb-1 group-hover:text-primary transition-colors">Work Experience (с 2015)</span>
-                            <span class="text-sm text-slate-500 leading-snug block">Нет пробелов >1 месяца. Вставлен Unemployment. Даты стык в стык.</span>
+                            <span class="font-bold text-slate-800 dark:text-white block text-[17px] mb-1 group-hover:text-primary dark:group-hover:text-blue-400 transition-colors">Work Experience (с 2015)</span>
+                            <span class="text-sm text-slate-500 dark:text-slate-400 leading-snug block">Нет пробелов >1 месяца. Вставлен Unemployment. Даты стык в стык.</span>
                         </div>
                     </label>
 
-                    <label class="flex items-center gap-5 p-5 bg-white rounded-2xl cursor-pointer border-2 border-slate-100 hover:border-blue-200 transition-all shadow-sm group focus-within:ring-2 focus-within:ring-blue-300">
-                        <input type="checkbox" id="chk-4" onchange="updateChecklistProgress()" class="custom-checkbox flex-shrink-0 w-7 h-7 bg-slate-50 border-2 border-slate-300 rounded-lg checklist-checkbox" aria-label="Правило 7 дней">
+                    <label class="flex items-center gap-5 p-5 bg-white dark:bg-dark_surface rounded-2xl cursor-pointer border-2 border-slate-100 dark:border-dark_border hover:border-blue-200 dark:hover:border-blue-700 transition-all shadow-sm group focus-within:ring-2 focus-within:ring-blue-300">
+                        <input type="checkbox" id="chk-4" onchange="updateChecklistProgress()" class="custom-checkbox flex-shrink-0 w-7 h-7 bg-slate-50 dark:bg-slate-800 border-2 border-slate-300 dark:border-slate-600 rounded-lg checklist-checkbox" aria-label="Правило 7 дней">
                         <div class="checklist-item-content flex-1">
-                            <span class="font-bold text-slate-800 block text-[17px] mb-1 group-hover:text-primary transition-colors">Правило 7 дней</span>
-                            <span class="text-sm text-slate-500 leading-snug block">Last Date on Duty = Неделю назад. В часах за 7 дней стоят нули.</span>
+                            <span class="font-bold text-slate-800 dark:text-white block text-[17px] mb-1 group-hover:text-primary dark:group-hover:text-blue-400 transition-colors">Правило 7 дней</span>
+                            <span class="text-sm text-slate-500 dark:text-slate-400 leading-snug block">Last Date on Duty = Неделю назад. В часах за 7 дней стоят нули.</span>
                         </div>
                     </label>
 
-                    <label class="flex items-center gap-5 p-5 bg-white rounded-2xl cursor-pointer border-2 border-slate-100 hover:border-blue-200 transition-all shadow-sm group focus-within:ring-2 focus-within:ring-blue-300">
-                        <input type="checkbox" id="chk-5" onchange="updateChecklistProgress()" class="custom-checkbox flex-shrink-0 w-7 h-7 bg-slate-50 border-2 border-slate-300 rounded-lg checklist-checkbox" aria-label="EIN Check">
+                    <label class="flex items-center gap-5 p-5 bg-white dark:bg-dark_surface rounded-2xl cursor-pointer border-2 border-slate-100 dark:border-dark_border hover:border-blue-200 dark:hover:border-blue-700 transition-all shadow-sm group focus-within:ring-2 focus-within:ring-blue-300">
+                        <input type="checkbox" id="chk-5" onchange="updateChecklistProgress()" class="custom-checkbox flex-shrink-0 w-7 h-7 bg-slate-50 dark:bg-slate-800 border-2 border-slate-300 dark:border-slate-600 rounded-lg checklist-checkbox" aria-label="EIN Check">
                         <div class="checklist-item-content flex-1">
-                            <span class="font-bold text-slate-800 block text-[17px] mb-1 group-hover:text-primary transition-colors">No Empty Fields / EIN Check</span>
-                            <span class="text-sm text-slate-500 leading-snug block">Пустоты закрыты "N/A". Для LLC подтвержден EIN через форму SS-4.</span>
+                            <span class="font-bold text-slate-800 dark:text-white block text-[17px] mb-1 group-hover:text-primary dark:group-hover:text-blue-400 transition-colors">No Empty Fields / EIN Check</span>
+                            <span class="text-sm text-slate-500 dark:text-slate-400 leading-snug block">Пустоты закрыты "N/A". Для LLC подтвержден EIN через форму SS-4.</span>
                         </div>
                     </label>
 
-                    <label class="flex items-center gap-5 p-5 bg-white rounded-2xl cursor-pointer border-2 border-slate-100 hover:border-blue-200 transition-all shadow-sm group focus-within:ring-2 focus-within:ring-blue-300">
-                        <input type="checkbox" id="chk-6" onchange="updateChecklistProgress()" class="custom-checkbox flex-shrink-0 w-7 h-7 bg-slate-50 border-2 border-slate-300 rounded-lg checklist-checkbox" aria-label="Подписи">
+                    <label class="flex items-center gap-5 p-5 bg-white dark:bg-dark_surface rounded-2xl cursor-pointer border-2 border-slate-100 dark:border-dark_border hover:border-blue-200 dark:hover:border-blue-700 transition-all shadow-sm group focus-within:ring-2 focus-within:ring-blue-300">
+                        <input type="checkbox" id="chk-6" onchange="updateChecklistProgress()" class="custom-checkbox flex-shrink-0 w-7 h-7 bg-slate-50 dark:bg-slate-800 border-2 border-slate-300 dark:border-slate-600 rounded-lg checklist-checkbox" aria-label="Подписи">
                         <div class="checklist-item-content flex-1">
-                            <span class="font-bold text-slate-800 block text-[17px] mb-1 group-hover:text-primary transition-colors">Юридическая чистота (Подписи)</span>
-                            <span class="text-sm text-slate-500 leading-snug block">Инициалы на <b>каждой из 8 страниц</b>. Safety Policy статус SIGNED.</span>
+                            <span class="font-bold text-slate-800 dark:text-white block text-[17px] mb-1 group-hover:text-primary dark:group-hover:text-blue-400 transition-colors">Юридическая чистота (Подписи)</span>
+                            <span class="text-sm text-slate-500 dark:text-slate-400 leading-snug block">Инициалы на <b>каждой из 8 страниц</b>. Safety Policy статус SIGNED.</span>
                         </div>
                     </label>
                 </div>
 
-                <div class="mt-10 pt-8 border-t border-slate-100 bg-red-50/40 -mx-6 md:-mx-10 px-6 md:px-10 pb-6">
-                    <h3 class="font-bold text-danger mb-5 flex items-center gap-2 text-lg"><i class="fas fa-flag text-danger"></i> Красные флаги (Red Flags)</h3>
-                    <ul class="text-sm text-slate-700 list-none space-y-3 grid md:grid-cols-2 gap-x-6">
-                        <li class="flex items-center gap-3 bg-white p-3 rounded-xl border border-red-100 shadow-sm"><i class="fas fa-times-circle text-danger bg-red-100 rounded-full"></i> <span>Агрессия при просьбе уточнить опыт работы.</span></li>
-                        <li class="flex items-center gap-3 bg-white p-3 rounded-xl border border-red-100 shadow-sm"><i class="fas fa-times-circle text-danger bg-red-100 rounded-full"></i> <span>Отказ предоставить четкое фото Medical Card / SSN.</span></li>
-                        <li class="flex items-center gap-3 bg-white p-3 rounded-xl border border-red-100 shadow-sm"><i class="fas fa-times-circle text-danger bg-red-100 rounded-full"></i> <span>Несовпадение адреса (и отказ идти в DMV).</span></li>
-                        <li class="flex items-center gap-3 bg-white p-3 rounded-xl border border-red-100 shadow-sm"><i class="fas fa-times-circle text-danger bg-red-100 rounded-full"></i> <span>Скрытие старых прав (PSP) / Не помнит компании.</span></li>
+                <div class="mt-10 pt-8 border-t border-slate-100 dark:border-slate-800 bg-red-50/40 dark:bg-red-900/10 -mx-6 md:-mx-10 px-6 md:px-10 pb-6 relative z-10">
+                    <h3 class="font-bold text-danger dark:text-red-400 mb-5 flex items-center gap-2 text-lg"><i class="fas fa-flag text-danger"></i> Красные флаги (Red Flags)</h3>
+                    <ul class="text-sm text-slate-700 dark:text-slate-300 list-none space-y-3 grid md:grid-cols-2 gap-x-6">
+                        <li class="flex items-center gap-3 bg-white dark:bg-slate-800 p-3 rounded-xl border border-red-100 dark:border-red-900/30 shadow-sm"><i class="fas fa-times-circle text-danger dark:text-red-400 bg-red-100 dark:bg-red-900/50 rounded-full"></i> <span>Агрессия при просьбе уточнить опыт работы.</span></li>
+                        <li class="flex items-center gap-3 bg-white dark:bg-slate-800 p-3 rounded-xl border border-red-100 dark:border-red-900/30 shadow-sm"><i class="fas fa-times-circle text-danger dark:text-red-400 bg-red-100 dark:bg-red-900/50 rounded-full"></i> <span>Отказ предоставить четкое фото Medical Card / SSN.</span></li>
+                        <li class="flex items-center gap-3 bg-white dark:bg-slate-800 p-3 rounded-xl border border-red-100 dark:border-red-900/30 shadow-sm"><i class="fas fa-times-circle text-danger dark:text-red-400 bg-red-100 dark:bg-red-900/50 rounded-full"></i> <span>Несовпадение адреса (и отказ идти в DMV).</span></li>
+                        <li class="flex items-center gap-3 bg-white dark:bg-slate-800 p-3 rounded-xl border border-red-100 dark:border-red-900/30 shadow-sm"><i class="fas fa-times-circle text-danger dark:text-red-400 bg-red-100 dark:bg-red-900/50 rounded-full"></i> <span>Скрытие старых прав (PSP) / Не помнит компании.</span></li>
                     </ul>
                 </div>
             </div>
 
+            <!-- PRINT ONLY SIGNATURE BLOCK -->
+            <div class="print-signature-block">
+                <div style="display: flex; justify-content: space-between; margin-top: 30px;">
+                    <div style="width: 30%; border-top: 1px solid black; padding-top: 5px; text-align: center; font-size: 14px;">Compliance Manager Name</div>
+                    <div style="width: 30%; border-top: 1px solid black; padding-top: 5px; text-align: center; font-size: 14px;">Signature</div>
+                    <div style="width: 30%; border-top: 1px solid black; padding-top: 5px; text-align: center; font-size: 14px;">Date</div>
+                </div>
+            </div>
+
             <!-- Pagination Controls -->
-            <div class="pagination-controls mt-8 flex justify-start border-t border-slate-200/60 pt-6">
-                <button onclick="switchTab('glossary')" class="flex items-center gap-2 bg-white border border-slate-200 hover:border-slate-400 hover:text-slate-800 px-5 py-2.5 rounded-xl font-semibold text-slate-500 transition-all shadow-sm group">
+            <div class="pagination-controls mt-8 flex justify-start border-t border-slate-200/60 dark:border-dark_border pt-6">
+                <button onclick="switchTab('glossary')" class="flex items-center gap-2 bg-white dark:bg-dark_surface border border-slate-200 dark:border-dark_border hover:border-slate-400 dark:hover:border-slate-500 hover:text-slate-800 dark:hover:text-white px-5 py-2.5 rounded-xl font-semibold text-slate-500 dark:text-slate-400 transition-all shadow-sm group">
                     <i class="fas fa-arrow-left group-hover:-translate-x-1 transition-transform"></i> Назад
                 </button>
             </div>
@@ -988,7 +998,7 @@
     </main>
 
     <!-- Floating Back to Top Button -->
-    <button id="back-to-top" onclick="scrollToTop()" class="fixed bottom-6 right-6 w-14 h-14 bg-primary text-white rounded-full shadow-lg shadow-blue-900/30 flex items-center justify-center hover:bg-blue-700 hover:scale-110 active:scale-95 transition-all duration-300 focus:outline-none focus:ring-4 focus:ring-blue-300/50 z-50" aria-label="Наверх">
+    <button id="back-to-top" onclick="scrollToTop()" class="fixed bottom-6 right-6 w-14 h-14 bg-primary dark:bg-blue-600 text-white rounded-full shadow-lg shadow-blue-900/30 dark:shadow-black/50 flex items-center justify-center hover:bg-blue-700 dark:hover:bg-blue-500 hover:scale-110 active:scale-95 transition-all duration-300 focus:outline-none focus:ring-4 focus:ring-blue-300/50 z-50" aria-label="Наверх">
         <i class="fas fa-arrow-up text-xl"></i>
     </button>
 
@@ -1000,19 +1010,40 @@
         const overlay = document.getElementById('mobile-overlay');
         const confirmModal = document.getElementById('confirm-modal');
 
+        // Dark Mode Logic
+        function toggleTheme() {
+            if (document.documentElement.classList.contains('dark')) {
+                document.documentElement.classList.remove('dark');
+                localStorage.setItem('theme', 'light');
+            } else {
+                document.documentElement.classList.add('dark');
+                localStorage.setItem('theme', 'dark');
+            }
+        }
+
         // Initialization: Load saved states on page load
         document.addEventListener('DOMContentLoaded', () => {
+            // Theme init
+            if (localStorage.getItem('theme') === 'dark' || (!('theme' in localStorage) && window.matchMedia('(prefers-color-scheme: dark)').matches)) {
+                document.documentElement.classList.add('dark');
+            }
+
+            // Set Print Date
+            const today = new Date();
+            document.getElementById('print-date').innerText = 'Printed on: ' + today.toLocaleDateString('en-US');
+
             // 1. Load active tab
             const savedTab = localStorage.getItem('compliance_active_tab') || 'intro';
             switchTab(savedTab, true);
 
-            // 2. Setup original text for glossary highlighting to prevent HTML destruction
+            // 2. Setup original text for glossary highlighting
             document.querySelectorAll('.search-target').forEach(el => {
                 el.setAttribute('data-original-text', el.innerHTML);
             });
 
-            // 3. Load checklist state without triggering 100% animation pop
+            // 3. Load checklist state
             loadChecklistState();
+            updateSmartAction();
         });
 
         // Scroll listener for Back to Top
@@ -1054,16 +1085,16 @@
             document.getElementById(tabId).classList.add('active');
             
             document.querySelectorAll('.nav-btn').forEach(btn => {
-                btn.classList.remove('active', 'bg-gradient-to-r', 'from-blue-800', 'to-primary', 'text-white', 'shadow-md');
-                btn.classList.add('text-blue-200');
+                btn.classList.remove('active', 'bg-gradient-to-r', 'from-blue-800', 'to-primary', 'dark:from-slate-800', 'dark:to-slate-700', 'text-white', 'shadow-md');
+                btn.classList.add('text-blue-200', 'dark:text-slate-400');
                 const icon = btn.querySelector('i');
                 if(icon) icon.classList.add('opacity-70');
             });
             
             const activeBtn = document.querySelector(`button[data-target="${tabId}"]`);
             if(activeBtn) {
-                activeBtn.classList.add('active', 'bg-gradient-to-r', 'from-blue-800', 'to-primary', 'text-white', 'shadow-md');
-                activeBtn.classList.remove('text-blue-200');
+                activeBtn.classList.add('active', 'bg-gradient-to-r', 'from-blue-800', 'to-primary', 'dark:from-slate-800', 'dark:to-slate-700', 'text-white', 'shadow-md');
+                activeBtn.classList.remove('text-blue-200', 'dark:text-slate-400');
                 const icon = activeBtn.querySelector('i');
                 if(icon) icon.classList.remove('opacity-70');
             }
@@ -1086,18 +1117,18 @@
             const scriptsRu = document.querySelectorAll('.script-ru');
 
             if (lang === 'en') {
-                btnEn.classList.add('bg-white', 'text-primary', 'shadow-sm');
-                btnEn.classList.remove('text-slate-500', 'hover:text-slate-700');
-                btnRu.classList.remove('bg-white', 'text-primary', 'shadow-sm');
-                btnRu.classList.add('text-slate-500', 'hover:text-slate-700');
+                btnEn.classList.add('bg-white', 'dark:bg-slate-600', 'text-primary', 'dark:text-white', 'shadow-sm');
+                btnEn.classList.remove('text-slate-500', 'dark:text-slate-400', 'hover:text-slate-700', 'dark:hover:text-slate-200');
+                btnRu.classList.remove('bg-white', 'dark:bg-slate-600', 'text-primary', 'dark:text-white', 'shadow-sm');
+                btnRu.classList.add('text-slate-500', 'dark:text-slate-400', 'hover:text-slate-700', 'dark:hover:text-slate-200');
 
                 scriptsEn.forEach(el => el.classList.remove('hidden'));
                 scriptsRu.forEach(el => el.classList.add('hidden'));
             } else {
-                btnRu.classList.add('bg-white', 'text-primary', 'shadow-sm');
-                btnRu.classList.remove('text-slate-500', 'hover:text-slate-700');
-                btnEn.classList.remove('bg-white', 'text-primary', 'shadow-sm');
-                btnEn.classList.add('text-slate-500', 'hover:text-slate-700');
+                btnRu.classList.add('bg-white', 'dark:bg-slate-600', 'text-primary', 'dark:text-white', 'shadow-sm');
+                btnRu.classList.remove('text-slate-500', 'dark:text-slate-400', 'hover:text-slate-700', 'dark:hover:text-slate-200');
+                btnEn.classList.remove('bg-white', 'dark:bg-slate-600', 'text-primary', 'dark:text-white', 'shadow-sm');
+                btnEn.classList.add('text-slate-500', 'dark:text-slate-400', 'hover:text-slate-700', 'dark:hover:text-slate-200');
 
                 scriptsRu.forEach(el => el.classList.remove('hidden'));
                 scriptsEn.forEach(el => el.classList.add('hidden'));
@@ -1113,7 +1144,6 @@
             navigator.clipboard.writeText(textToCopy).then(() => {
                 showSuccessState(btnElement, iconElement, textElement);
             }).catch(err => {
-                // Fallback for iframe restrictions
                 const textArea = document.createElement("textarea");
                 textArea.value = textToCopy;
                 document.body.appendChild(textArea);
@@ -1130,16 +1160,16 @@
 
         function showSuccessState(btn, icon, textSpan) {
             const feedback = btn.querySelector('.copy-feedback');
-            btn.classList.remove('text-primary', 'border-blue-100');
+            btn.classList.remove('text-primary', 'dark:text-blue-300', 'border-blue-100', 'dark:border-slate-600', 'bg-white', 'dark:bg-slate-700');
             btn.classList.add('bg-success/10', 'text-success', 'border-success/30');
             icon.classList.remove('far', 'fa-copy');
             icon.classList.add('fas', 'fa-check');
             textSpan.innerText = 'Copied';
-            feedback.classList.add('show');
+            if(feedback) feedback.classList.add('show');
             
             setTimeout(() => {
-                feedback.classList.remove('show');
-                btn.classList.add('text-primary', 'border-blue-100');
+                if(feedback) feedback.classList.remove('show');
+                btn.classList.add('text-primary', 'dark:text-blue-300', 'border-blue-100', 'dark:border-slate-600', 'bg-white', 'dark:bg-slate-700');
                 btn.classList.remove('bg-success/10', 'text-success', 'border-success/30');
                 icon.classList.add('far', 'fa-copy');
                 icon.classList.remove('fas', 'fa-check');
@@ -1147,7 +1177,7 @@
             }, 2000);
         }
 
-        // --- ENHANCED SEARCH WITH HIGHLIGHTING AND EMPTY STATE ---
+        // --- ENHANCED SEARCH WITH HIGHLIGHTING ---
         function clearSearch() {
             const input = document.getElementById('glossary-search');
             input.value = '';
@@ -1210,14 +1240,14 @@
 
                     if (rowHasMatch && filter.length > 0) {
                         row.style.display = '';
-                        row.classList.add('bg-accent/5');
+                        row.classList.add('bg-accent/5', 'dark:bg-amber-900/10');
                         totalMatches++;
                     } else if (filter.length === 0) {
                         row.style.display = '';
-                        row.classList.remove('bg-accent/5');
+                        row.classList.remove('bg-accent/5', 'dark:bg-amber-900/10');
                     } else {
                         row.style.display = 'none';
-                        row.classList.remove('bg-accent/5');
+                        row.classList.remove('bg-accent/5', 'dark:bg-amber-900/10');
                     }
                 });
 
@@ -1233,7 +1263,6 @@
                 }
             });
 
-            // Handle Empty State Logic
             if (filter.length > 0 && totalMatches === 0) {
                 noResultsState.classList.remove('hidden');
             } else {
@@ -1243,11 +1272,12 @@
             countDisplay.innerText = totalMatches;
         }
 
-        // --- CUSTOM MODAL & CHECKLIST DATA MANAGEMENT ---
+        // --- CHECKLIST & SMART STATUS LOGIC ---
+        let currentChecklistPercent = 0;
+
         function requestClearData() {
             confirmModal.classList.remove('hidden');
             confirmModal.classList.add('flex');
-            // Slight delay for animation
             setTimeout(() => confirmModal.querySelector('.absolute').classList.add('opacity-100'), 10);
         }
 
@@ -1262,7 +1292,7 @@
         function confirmClearData() {
             localStorage.removeItem('compliance_checklist_state');
             document.querySelectorAll('.checklist-checkbox').forEach(cb => cb.checked = false);
-            updateChecklistProgress(true); // show reset animation
+            updateChecklistProgress(true); 
             closeModal();
         }
 
@@ -1275,7 +1305,7 @@
                     if (cb) cb.checked = true;
                 });
             }
-            updateChecklistProgress(false); // Update UI without triggering pop animations
+            updateChecklistProgress(false); 
         }
 
         function updateChecklistProgress(triggerAnimations = true) {
@@ -1295,51 +1325,99 @@
                     checkedIds.push(cb.id);
                     contentDiv.classList.add('checked');
                     cb.parentElement.classList.replace('border-slate-100', 'border-success/30');
-                    cb.parentElement.classList.add('bg-success/5');
+                    cb.parentElement.classList.replace('dark:border-dark_border', 'dark:border-emerald-900/50');
+                    cb.parentElement.classList.add('bg-success/5', 'dark:bg-emerald-900/10');
                 } else {
                     contentDiv.classList.remove('checked');
                     cb.parentElement.classList.replace('border-success/30', 'border-slate-100');
-                    cb.parentElement.classList.remove('bg-success/5');
+                    cb.parentElement.classList.replace('dark:border-emerald-900/50', 'dark:border-dark_border');
+                    cb.parentElement.classList.remove('bg-success/5', 'dark:bg-emerald-900/10');
                 }
             });
 
             localStorage.setItem('compliance_checklist_state', JSON.stringify(checkedIds));
 
-            const percentage = Math.round((checkedCount / totalCount) * 100);
-            progressBar.style.width = percentage + '%';
+            currentChecklistPercent = Math.round((checkedCount / totalCount) * 100);
+            progressBar.style.width = currentChecklistPercent + '%';
             
-            if(percentage === 100) {
-                // Fully Done State
-                progressBar.classList.remove('bg-primary', 'bg-stripes', 'animate-stripes');
+            if(currentChecklistPercent === 100) {
+                progressBar.classList.remove('bg-primary', 'dark:bg-blue-500', 'bg-stripes', 'animate-stripes');
                 progressBar.classList.add('bg-success', 'shadow-[0_0_15px_rgba(16,185,129,0.5)]');
                 
                 progressText.innerHTML = `<i class="fas fa-check-circle mr-1"></i> ГОТОВО`;
                 progressText.classList.replace('text-primary', 'text-success');
-                progressText.classList.add('border-success/30', 'bg-success/10');
+                progressText.classList.replace('dark:text-blue-400', 'dark:text-emerald-400');
+                progressText.classList.add('border-success/30', 'bg-success/10', 'dark:border-emerald-800', 'dark:bg-emerald-900/30');
                 
-                container.classList.add('border-success/50', 'bg-success/5');
-                container.classList.remove('bg-slate-50', 'border-slate-100');
+                container.classList.add('border-success/50', 'bg-success/5', 'dark:border-emerald-900/50', 'dark:bg-emerald-900/10');
+                container.classList.remove('bg-slate-50', 'border-slate-100', 'dark:bg-slate-800/50', 'dark:border-slate-700');
                 
-                // Only trigger the strong visual pop if user actively clicked the last item (not on load)
                 if (triggerAnimations && checkedCount > 0) {
                     container.classList.add('animate-pop');
                     setTimeout(() => container.classList.remove('animate-pop'), 400);
                 } else {
-                    // Just the light ambient pulse for static full state
                     container.classList.add('animate-pulse-light');
                 }
             } else {
-                // In Progress State
-                progressBar.classList.add('bg-primary', 'bg-stripes', 'animate-stripes');
+                progressBar.classList.add('bg-primary', 'dark:bg-blue-500', 'bg-stripes', 'animate-stripes');
                 progressBar.classList.remove('bg-success', 'shadow-[0_0_15px_rgba(16,185,129,0.5)]');
                 
-                progressText.innerHTML = `${percentage}% (${checkedCount}/${totalCount})`;
+                progressText.innerHTML = `${currentChecklistPercent}% (${checkedCount}/${totalCount})`;
                 progressText.classList.replace('text-success', 'text-primary');
-                progressText.classList.remove('border-success/30', 'bg-success/10');
+                progressText.classList.replace('dark:text-emerald-400', 'dark:text-blue-400');
+                progressText.classList.remove('border-success/30', 'bg-success/10', 'dark:border-emerald-800', 'dark:bg-emerald-900/30');
                 
-                container.classList.remove('animate-pulse-light', 'animate-pop', 'border-success/50', 'bg-success/5');
-                container.classList.add('bg-slate-50', 'border-slate-100');
+                container.classList.remove('animate-pulse-light', 'animate-pop', 'border-success/50', 'bg-success/5', 'dark:border-emerald-900/50', 'dark:bg-emerald-900/10');
+                container.classList.add('bg-slate-50', 'border-slate-100', 'dark:bg-slate-800/50', 'dark:border-slate-700');
             }
+
+            updateSmartAction();
+        }
+
+        function updateSmartAction() {
+            const nameInput = document.getElementById('driver-name').value.trim() || '[Имя Водителя]';
+            const btnText = document.getElementById('smart-action-text');
+            const btn = document.getElementById('smart-action-btn');
+            
+            if (currentChecklistPercent === 100) {
+                btnText.innerHTML = `Скопировать: <b>${nameInput} – DONE</b> <i class="fas fa-check-circle text-success ml-1"></i>`;
+                btn.classList.replace('text-primary', 'text-success');
+                btn.classList.replace('dark:text-blue-300', 'dark:text-emerald-400');
+                btn.classList.replace('border-blue-200', 'border-success/50');
+                btn.classList.replace('dark:border-slate-600', 'dark:border-emerald-800');
+            } else {
+                btnText.innerHTML = `Скопировать: <b>${nameInput} – SIGN</b>`;
+                btn.classList.replace('text-success', 'text-primary');
+                btn.classList.replace('dark:text-emerald-400', 'dark:text-blue-300');
+                btn.classList.replace('border-success/50', 'border-blue-200');
+                btn.classList.replace('dark:border-emerald-800', 'dark:border-slate-600');
+            }
+        }
+
+        function copySmartStatus() {
+            const nameInput = document.getElementById('driver-name').value.trim() || '[Имя Водителя]';
+            const status = currentChecklistPercent === 100 ? `${nameInput} – DONE` : `${nameInput} – SIGN`;
+            
+            const btn = document.getElementById('smart-action-btn');
+            const feedback = btn.querySelector('.copy-feedback-smart');
+
+            navigator.clipboard.writeText(status).then(() => {
+                feedback.style.opacity = '1';
+                setTimeout(() => feedback.style.opacity = '0', 2000);
+            }).catch(err => {
+                const textArea = document.createElement("textarea");
+                textArea.value = status;
+                document.body.appendChild(textArea);
+                textArea.select();
+                try {
+                    document.execCommand('copy');
+                    feedback.style.opacity = '1';
+                    setTimeout(() => feedback.style.opacity = '0', 2000);
+                } catch (e) {
+                    console.error('Fallback failed');
+                }
+                document.body.removeChild(textArea);
+            });
         }
     </script>
 </body>
