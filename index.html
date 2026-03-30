@@ -257,6 +257,62 @@
                     </a>
                 </div>
             </div>
+            <div class="mx-4 mt-3 rounded-2xl border border-blue-700/40 dark:border-slate-700 bg-blue-900/20 dark:bg-slate-800/60 p-3.5 shadow-inner">
+                <div class="flex items-start justify-between gap-3">
+                    <div class="min-w-0">
+                        <h3 class="text-xs font-bold uppercase tracking-[0.18em] text-blue-200 dark:text-slate-300">Training Audio</h3>
+                        <p class="mt-1 text-[11px] leading-4 text-blue-300/80 dark:text-slate-400">Quick playback for the DriverReady training clip.</p>
+                    </div>
+                    <div class="shrink-0 rounded-full border border-blue-700/50 dark:border-slate-600 bg-blue-950/30 dark:bg-slate-900/70 w-8 h-8 flex items-center justify-center text-blue-200 dark:text-slate-300">
+                        <i class="fas fa-wave-square text-[11px]"></i>
+                    </div>
+                </div>
+                <div class="mt-3 rounded-xl border border-blue-700/45 dark:border-slate-600 bg-blue-950/30 dark:bg-slate-900/70 px-2.5 py-2.5">
+                    <div class="flex items-center gap-2">
+                        <button
+                            id="training-audio-toggle"
+                            type="button"
+                            class="shrink-0 rounded-xl bg-white dark:bg-slate-700 border border-blue-100 dark:border-slate-600 hover:bg-blue-50 dark:hover:bg-slate-600 w-10 h-10 text-primary dark:text-blue-300 transition-all duration-200 focus:outline-none focus:ring-2 focus:ring-blue-300 active:scale-95 flex items-center justify-center shadow-sm"
+                            aria-label="Play training audio"
+                            aria-pressed="false"
+                        >
+                            <i class="fas fa-play text-[11px]"></i>
+                        </button>
+                        <div class="min-w-0 flex-1">
+                            <div class="text-[10px] font-semibold uppercase tracking-[0.16em] text-blue-200/80 dark:text-slate-400">Playback</div>
+                            <div class="mt-0.5 text-xs text-blue-100 dark:text-slate-200 truncate">DriverReady training clip</div>
+                        </div>
+                        <button
+                            id="training-audio-mute"
+                            type="button"
+                            class="shrink-0 rounded-lg border border-blue-700/50 dark:border-slate-600 bg-blue-950/40 dark:bg-slate-900/80 hover:bg-blue-900/50 dark:hover:bg-slate-800 text-blue-200 dark:text-slate-300 w-8 h-8 transition-colors focus:outline-none focus:ring-2 focus:ring-blue-300 flex items-center justify-center"
+                            aria-label="Mute training audio"
+                            aria-pressed="false"
+                        >
+                            <i class="fas fa-volume-high text-[10px]"></i>
+                        </button>
+                    </div>
+                    <div class="mt-2 flex items-center justify-between gap-2">
+                        <span class="text-[10px] uppercase tracking-[0.16em] text-blue-300/70 dark:text-slate-500">Time</span>
+                        <span id="training-audio-time" class="text-[11px] font-mono text-blue-100 dark:text-slate-200 whitespace-nowrap">0:00 / --:--</span>
+                    </div>
+                    <button
+                        id="training-audio-progress"
+                        type="button"
+                        class="mt-2.5 relative block w-full h-2 rounded-full bg-blue-950/60 dark:bg-slate-950/80 overflow-hidden focus:outline-none focus:ring-2 focus:ring-blue-300"
+                        aria-label="Seek training audio"
+                        aria-valuemin="0"
+                        aria-valuemax="100"
+                        aria-valuenow="0"
+                    >
+                        <span id="training-audio-progress-fill" class="absolute inset-y-0 left-0 w-0 rounded-full bg-gradient-to-r from-blue-300 to-blue-500 dark:from-blue-400 dark:to-cyan-400 transition-[width] duration-150"></span>
+                    </button>
+                </div>
+                <audio id="training-audio-element" preload="metadata" class="hidden" aria-hidden="true">
+                    <source src="driverready-audio.m4a" type="audio/mp4">
+                    <source src="driverready-audio.m4a.m4a" type="audio/mp4">
+                </audio>
+            </div>
         </nav>
         <div class="p-4 border-t border-blue-800/50 dark:border-slate-800 text-[11px] text-blue-400/60 dark:text-slate-500 text-center font-mono tracking-wider flex justify-between items-center">
             <span>AIST Safety v3.0</span>
@@ -1070,7 +1126,10 @@
                 el.setAttribute('data-original-text', el.innerHTML);
             });
 
-            // 3. Load checklist state
+            // 3. Init custom training audio player
+            initTrainingAudioPlayer();
+
+            // 4. Load checklist state
             loadChecklistState();
             updateSmartAction();
         });
@@ -1321,6 +1380,99 @@
             }
 
             countDisplay.innerText = totalMatches;
+        }
+
+        function formatAudioTime(seconds) {
+            if (!Number.isFinite(seconds) || seconds < 0) {
+                return '--:--';
+            }
+
+            const totalSeconds = Math.floor(seconds);
+            const minutes = Math.floor(totalSeconds / 60);
+            const secs = totalSeconds % 60;
+            return `${minutes}:${secs.toString().padStart(2, '0')}`;
+        }
+
+        function initTrainingAudioPlayer() {
+            const audio = document.getElementById('training-audio-element');
+            const toggleBtn = document.getElementById('training-audio-toggle');
+            const muteBtn = document.getElementById('training-audio-mute');
+            const timeDisplay = document.getElementById('training-audio-time');
+            const progress = document.getElementById('training-audio-progress');
+            const progressFill = document.getElementById('training-audio-progress-fill');
+
+            if (!audio || !toggleBtn || !muteBtn || !timeDisplay || !progress || !progressFill) {
+                return;
+            }
+
+            const toggleIcon = toggleBtn.querySelector('i');
+            const muteIcon = muteBtn.querySelector('i');
+
+            const updateUI = () => {
+                const currentTime = Number.isFinite(audio.currentTime) ? audio.currentTime : 0;
+                const duration = Number.isFinite(audio.duration) ? audio.duration : NaN;
+                const progressPercent = duration ? Math.min((currentTime / duration) * 100, 100) : 0;
+
+                progressFill.style.width = `${progressPercent}%`;
+                progress.setAttribute('aria-valuenow', `${Math.round(progressPercent)}`);
+                timeDisplay.textContent = `${formatAudioTime(currentTime)} / ${formatAudioTime(duration)}`;
+
+                if (audio.paused) {
+                    toggleBtn.setAttribute('aria-label', 'Play training audio');
+                    toggleBtn.setAttribute('aria-pressed', 'false');
+                    toggleIcon.className = 'fas fa-play text-[11px]';
+                } else {
+                    toggleBtn.setAttribute('aria-label', 'Pause training audio');
+                    toggleBtn.setAttribute('aria-pressed', 'true');
+                    toggleIcon.className = 'fas fa-pause text-[11px]';
+                }
+
+                if (audio.muted) {
+                    muteBtn.setAttribute('aria-label', 'Unmute training audio');
+                    muteBtn.setAttribute('aria-pressed', 'true');
+                    muteIcon.className = 'fas fa-volume-xmark text-[10px]';
+                } else {
+                    muteBtn.setAttribute('aria-label', 'Mute training audio');
+                    muteBtn.setAttribute('aria-pressed', 'false');
+                    muteIcon.className = 'fas fa-volume-high text-[10px]';
+                }
+            };
+
+            toggleBtn.addEventListener('click', async () => {
+                try {
+                    if (audio.paused) {
+                        await audio.play();
+                    } else {
+                        audio.pause();
+                    }
+                } catch (error) {
+                    console.error('Training audio playback failed:', error);
+                }
+                updateUI();
+            });
+
+            muteBtn.addEventListener('click', () => {
+                audio.muted = !audio.muted;
+                updateUI();
+            });
+
+            progress.addEventListener('click', (event) => {
+                const rect = progress.getBoundingClientRect();
+                if (!rect.width || !Number.isFinite(audio.duration)) {
+                    return;
+                }
+
+                const clickX = event.clientX - rect.left;
+                const ratio = Math.min(Math.max(clickX / rect.width, 0), 1);
+                audio.currentTime = ratio * audio.duration;
+                updateUI();
+            });
+
+            ['loadedmetadata', 'durationchange', 'timeupdate', 'play', 'pause', 'ended', 'volumechange'].forEach(eventName => {
+                audio.addEventListener(eventName, updateUI);
+            });
+
+            updateUI();
         }
 
         // --- CHECKLIST & SMART STATUS LOGIC ---
